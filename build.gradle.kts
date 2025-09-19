@@ -34,7 +34,7 @@ java {
 
 tasks.withType<KotlinCompile>().configureEach {
     compilerOptions {
-        freeCompilerArgs.add("-Xsuppress=NOTHING_TO_INLINE")
+//        freeCompilerArgs.add("-Xsuppress=NOTHING_TO_INLINE")
     }
 }
 

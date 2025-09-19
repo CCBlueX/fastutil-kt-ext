@@ -7,11 +7,69 @@ tasks.named("compileKotlin") {
 val generateAllTask = tasks.register("generateAll") {
     group = TASK_GROUP
     dependsOn(
+        syncUnmodifiableTask,
         pairComponentNTask,
         pairFactoryTask,
         immutableListFactoryTask,
         mutableListFactoryTask,
+        mapFastIterableIteratorTask,
     )
+}
+
+/**
+ * Example:
+ * - `IntList.synchronized()`
+ * - `IntList.synchronized(lock)`
+ * - `IntList.unmodifiable()`
+ */
+val syncUnmodifiableTask = tasks.register<GenerateSrcTask>("sync-unmodifiable") {
+    group = TASK_GROUP
+
+    file.set(generatedDir.map { it.file("sync-unmodifiable.kt") })
+    packageName.set("moe.lasoleil.fastutil")
+    imports.addAll(IMPORT_ALL)
+
+    content {
+        FastutilType.values().forEach { type ->
+            for (suffix in arrayOf("List", "Set")) {
+                val rawType = type.typeName + suffix
+                if (type.isGeneric) {
+                    appendLine("inline fun <T> ${rawType}<T>.synchronized(): ${rawType}<T> = ${rawType}s.synchronize(this)")
+                    appendLine("inline fun <T> ${rawType}<T>.synchronized(lock: Any): ${rawType}<T> = ${rawType}s.synchronize(this, lock)")
+                    appendLine("inline fun <T> ${rawType}<T>.unmodifiable(): ${rawType}<T> = ${rawType}s.unmodifiable(this)")
+                } else {
+                    appendLine("inline fun ${rawType}.synchronized(): $rawType = ${rawType}s.synchronize(this)")
+                    appendLine("inline fun ${rawType}.synchronized(lock: Any): $rawType = ${rawType}s.synchronize(this, lock)")
+                    appendLine("inline fun ${rawType}.unmodifiable(): $rawType = ${rawType}s.unmodifiable(this)")
+                }
+            }
+        }
+
+        forEachMapTypes { left, right ->
+            when {
+                left.isGeneric && right.isGeneric -> {
+                    appendLine("inline fun <K, V> ${left}2${right}Map<K, V>.synchronized() = ${left}2${right}Maps.synchronize(this)")
+                    appendLine("inline fun <K, V> ${left}2${right}Map<K, V>.synchronized(lock: Any) = ${left}2${right}Maps.synchronize(this, lock)")
+                    appendLine("inline fun <K, V> ${left}2${right}Map<K, V>.unmodifiable() = ${left}2${right}Maps.unmodifiable(this)")
+                }
+                left.isGeneric -> {
+                    appendLine("inline fun <K> ${left}2${right}Map<K>.synchronized() = ${left}2${right}Maps.synchronize(this)")
+                    appendLine("inline fun <K> ${left}2${right}Map<K>.synchronized(lock: Any) = ${left}2${right}Maps.synchronize(this, lock)")
+                    appendLine("inline fun <K> ${left}2${right}Map<K>.unmodifiable() = ${left}2${right}Maps.unmodifiable(this)")
+                }
+                right.isGeneric -> {
+                    appendLine("inline fun <V> ${left}2${right}Map<V>.synchronized() = ${left}2${right}Maps.synchronize(this)")
+                    appendLine("inline fun <V> ${left}2${right}Map<V>.synchronized(lock: Any) = ${left}2${right}Maps.synchronize(this, lock)")
+                    appendLine("inline fun <V> ${left}2${right}Map<V>.unmodifiable() = ${left}2${right}Maps.unmodifiable(this)")
+                }
+                else -> {
+                    appendLine("inline fun ${left}2${right}Map.synchronized() = ${left}2${right}Maps.synchronize(this)")
+                    appendLine("inline fun ${left}2${right}Map.synchronized(lock: Any) = ${left}2${right}Maps.synchronize(this, lock)")
+                    appendLine("inline fun ${left}2${right}Map.unmodifiable() = ${left}2${right}Maps.unmodifiable(this)")
+                }
+            }
+        }
+    }
 }
 
 /**
@@ -22,7 +80,7 @@ val pairComponentNTask = tasks.register<GenerateSrcTask>("pair-componentN") {
     group = TASK_GROUP
 
     file.set(generatedDir.map { it.file("pairs-componentN.kt") })
-    packageName.set("moe.lasoleil.fastutil.pairs")
+    packageName.set("moe.lasoleil.fastutil")
     imports.add("it.unimi.dsi.fastutil.Pair")
     imports.addAll(IMPORT_ALL)
 
@@ -60,7 +118,7 @@ val pairFactoryTask = tasks.register<GenerateSrcTask>("pair-factory") {
     group = TASK_GROUP
 
     file.set(generatedDir.map { it.file("pairs-factory.kt") })
-    packageName.set("moe.lasoleil.fastutil.pairs")
+    packageName.set("moe.lasoleil.fastutil")
     imports.add("it.unimi.dsi.fastutil.Pair")
     imports.addAll(IMPORT_ALL)
 
@@ -79,20 +137,20 @@ val immutableListFactoryTask = tasks.register<GenerateSrcTask>("immutable-list-f
 
     file.set(generatedDir.map { it.file("immutable-list-factory.kt") })
 
-    packageName.set("moe.lasoleil.fastutil.lists")
+    packageName.set("moe.lasoleil.fastutil")
     imports.addAll(IMPORT_ALL)
 
     content {
         FastutilType.values().forEach { type ->
             if (type.isGeneric) {
-                appendLine("inline fun <T> ${type.lowercaseName}ListOf(): ${type.typeName}List<T> = ${type.typeName}ImmutableList.of()")
+                appendLine("inline fun <T> ${type.lowercaseName}ListOf(): ${type.typeName}List<T> = ${type.typeName}Lists.emptyList()")
                 appendLine("inline fun <T> ${type.lowercaseName}ListOf(element: T): ${type.typeName}List<T> = ${type.typeName}Lists.singleton(element)")
                 appendLine("inline fun <T> ${type.lowercaseName}ListOf(vararg elements: T): ${type.typeName}List<T> = ${type.typeName}ImmutableList(elements)")
 
                 appendLine("inline fun <T> Array<out T>.as${type.typeName}List(): ${type.typeName}List<T> = ${type.typeName}ImmutableList(this)")
                 appendLine("inline fun <T> Array<out T>.as${type.typeName}List(offset: Int = 0, length: Int = this.size): ${type.typeName}List<T> = ${type.typeName}ImmutableList(this, offset, length)")
             } else {
-                appendLine("inline fun ${type.lowercaseName}ListOf(): ${type.typeName}List = ${type.typeName}ImmutableList.of()")
+                appendLine("inline fun ${type.lowercaseName}ListOf(): ${type.typeName}List = ${type.typeName}Lists.emptyList()")
                 appendLine("inline fun ${type.lowercaseName}ListOf(element: ${type.typeName}): ${type.typeName}List = ${type.typeName}Lists.singleton(element)")
                 appendLine("inline fun ${type.lowercaseName}ListOf(vararg elements: ${type.typeName}): ${type.typeName}List = ${type.typeName}ImmutableList(elements)")
 
@@ -113,7 +171,7 @@ val mutableListFactoryTask = tasks.register<GenerateSrcTask>("mutable-list-facto
 
     file.set(generatedDir.map { it.file("mutable-list-factory.kt") })
 
-    packageName.set("moe.lasoleil.fastutil.lists")
+    packageName.set("moe.lasoleil.fastutil")
     imports.addAll(IMPORT_ALL)
 
     content {
@@ -129,6 +187,42 @@ val mutableListFactoryTask = tasks.register<GenerateSrcTask>("mutable-list-facto
                 appendLine("inline fun ${type.lowercaseName}MutableListOf(vararg elements: ${type.typeName}): ${type.typeName}List = ${type.typeName}ArrayList(elements)")
 
                 appendLine("inline fun ${type.typeName}Array.to${type.typeName}MutableList(offset: Int = 0, length: Int = this.size): ${type.typeName}List = ${type.typeName}ArrayList(this, offset, length)")
+            }
+        }
+    }
+}
+
+/**
+ * Example:
+ * - `Int2ObjectOpenHashMap().fastIterable()`
+ * - `Int2ObjectOpenHashMap().fastIterator()`
+ */
+val mapFastIterableIteratorTask = tasks.register<GenerateSrcTask>("map-fast-iterable-iterator") {
+    group = TASK_GROUP
+
+    file.set(generatedDir.map { it.file("map-fast-iterable-iterator.kt") })
+    packageName.set("moe.lasoleil.fastutil")
+    imports.addAll(IMPORT_ALL)
+
+    content {
+        forEachMapTypes { left, right ->
+            when {
+                left.isGeneric && right.isGeneric -> {
+                    appendLine("inline fun <K, V> ${left}2${right}Map<K, V>.fastIterable() = ${left}2${right}Maps.fastIterable(this)")
+                    appendLine("inline fun <K, V> ${left}2${right}Map<K, V>.fastIterator() = ${left}2${right}Maps.fastIterator(this)")
+                }
+                left.isGeneric -> {
+                    appendLine("inline fun <K> ${left}2${right}Map<K>.fastIterable() = ${left}2${right}Maps.fastIterable(this)")
+                    appendLine("inline fun <K> ${left}2${right}Map<K>.fastIterator() = ${left}2${right}Maps.fastIterator(this)")
+                }
+                right.isGeneric -> {
+                    appendLine("inline fun <V> ${left}2${right}Map<V>.fastIterable() = ${left}2${right}Maps.fastIterable(this)")
+                    appendLine("inline fun <V> ${left}2${right}Map<V>.fastIterator() = ${left}2${right}Maps.fastIterator(this)")
+                }
+                else -> {
+                    appendLine("inline fun ${left}2${right}Map.fastIterable() = ${left}2${right}Maps.fastIterable(this)")
+                    appendLine("inline fun ${left}2${right}Map.fastIterator() = ${left}2${right}Maps.fastIterator(this)")
+                }
             }
         }
     }
