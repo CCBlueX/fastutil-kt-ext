@@ -27,11 +27,13 @@ val syncUnmodifiableTask = tasks.register<GenerateSrcTask>("sync-unmodifiable") 
 
     file.set(generatedDir.map { it.file("sync-unmodifiable.kt") })
     packageName.set("moe.lasoleil.fastutil")
+    imports.add("it.unimi.dsi.fastutil.PriorityQueue")
+    imports.add("it.unimi.dsi.fastutil.PriorityQueues")
     imports.addAll(IMPORT_ALL)
 
     content {
         FastutilType.values().forEach { type ->
-            for (suffix in arrayOf("List", "Set")) {
+            for (suffix in arrayOf("BigList", "List", "Set")) {
                 val rawType = type.typeName + suffix
                 if (type.isGeneric) {
                     appendLine("inline fun <T> ${rawType}<T>.synchronized(): ${rawType}<T> = ${rawType}s.synchronize(this)")
@@ -42,6 +44,18 @@ val syncUnmodifiableTask = tasks.register<GenerateSrcTask>("sync-unmodifiable") 
                     appendLine("inline fun ${rawType}.synchronized(lock: Any): $rawType = ${rawType}s.synchronize(this, lock)")
                     appendLine("inline fun ${rawType}.unmodifiable(): $rawType = ${rawType}s.unmodifiable(this)")
                 }
+            }
+        }
+
+        appendLine("inline fun <T> PriorityQueue<T>.synchronized(): PriorityQueue<T> = PriorityQueues.synchronize(this)")
+        appendLine("inline fun <T> PriorityQueue<T>.synchronized(lock: Any): PriorityQueue<T> = PriorityQueues.synchronize(this, lock)")
+        FastutilType.values().forEach { type ->
+            if (type.isGeneric || type == FastutilType.BOOLEAN) {
+                return@forEach
+            } else {
+                val rawType = type.typeName + "PriorityQueue"
+                appendLine("inline fun ${rawType}.synchronized(): $rawType = ${rawType}s.synchronize(this)")
+                appendLine("inline fun ${rawType}.synchronized(lock: Any): $rawType = ${rawType}s.synchronize(this, lock)")
             }
         }
 
