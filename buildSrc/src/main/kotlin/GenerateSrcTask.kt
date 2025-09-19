@@ -1,0 +1,41 @@
+
+import org.gradle.api.DefaultTask
+import org.gradle.api.file.RegularFileProperty
+import org.gradle.api.provider.ListProperty
+import org.gradle.api.provider.Property
+import org.gradle.api.tasks.Input
+import org.gradle.api.tasks.OutputFile
+import org.gradle.api.tasks.TaskAction
+
+abstract class GenerateSrcTask : DefaultTask() {
+
+    @get:OutputFile
+    abstract val file: RegularFileProperty
+
+    @get:Input
+    abstract val packageName: Property<String>
+
+    @get:Input
+    abstract val imports: ListProperty<String>
+
+    private var writerAction: (Appendable.() -> Unit)? = null
+
+    fun content(action: (Appendable.() -> Unit)) {
+        writerAction = action
+    }
+
+    @TaskAction
+    fun generate() {
+        val file = file.get().asFile
+        file.parentFile.mkdirs()
+        file.bufferedWriter(Charsets.UTF_8).use {
+            it.appendLine("package ${packageName.get()}")
+            it.appendLine()
+            imports.get().forEach { import ->
+                it.appendLine("import $import")
+            }
+            it.appendLine()
+            writerAction?.invoke(it)
+        }
+    }
+}

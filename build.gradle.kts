@@ -1,7 +1,10 @@
+import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
+
 plugins {
     `java-library`
     `maven-publish`
     kotlin("jvm") version "2.0.0"
+    id("generator")
 }
 
 group = "moe.lasoleil"
@@ -28,6 +31,19 @@ java {
     targetCompatibility = JavaVersion.VERSION_1_8
 }
 
+
+tasks.withType<KotlinCompile>().configureEach {
+    compilerOptions {
+        freeCompilerArgs.add("-Xsuppress=NOTHING_TO_INLINE")
+    }
+}
+
 kotlin {
     jvmToolchain(8)
+
+    sourceSets {
+        main {
+            kotlin.srcDir(layout.buildDirectory.dir("generated/sources"))
+        }
+    }
 }
