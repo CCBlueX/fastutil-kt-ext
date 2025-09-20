@@ -19,12 +19,12 @@ dependencies {
     compileOnly(kotlin("stdlib"))
     compileOnly("it.unimi.dsi:fastutil:8.5.15")
 
-    testImplementation(kotlin("test"))
+//    testImplementation(kotlin("test"))
 }
 
-tasks.test {
-    useJUnitPlatform()
-}
+//tasks.test {
+//    useJUnitPlatform()
+//}
 
 java {
     sourceCompatibility = JavaVersion.VERSION_1_8
