@@ -4,7 +4,7 @@ tasks.named("compileKotlin") {
     dependsOn(generateAllTask)
 }
 
-val generateAllTask = tasks.register("generateAll") {
+val generateAllTask = tasks.register("generate-all") {
     group = TASK_GROUP
     dependsOn(
         syncUnmodifiableTask,
@@ -26,7 +26,7 @@ val syncUnmodifiableTask = tasks.register<GenerateSrcTask>("sync-unmodifiable") 
     group = TASK_GROUP
 
     file.set(generatedDir.map { it.file("sync-unmodifiable.kt") })
-    packageName.set("moe.lasoleil.fastutil")
+    packageName.set(PACKAGE)
     imports.add("it.unimi.dsi.fastutil.PriorityQueue")
     imports.add("it.unimi.dsi.fastutil.PriorityQueues")
     imports.addAll(IMPORT_ALL)
@@ -94,7 +94,7 @@ val pairComponentNTask = tasks.register<GenerateSrcTask>("pair-componentN") {
     group = TASK_GROUP
 
     file.set(generatedDir.map { it.file("pairs-componentN.kt") })
-    packageName.set("moe.lasoleil.fastutil")
+    packageName.set(PACKAGE)
     imports.add("it.unimi.dsi.fastutil.Pair")
     imports.addAll(IMPORT_ALL)
 
@@ -132,7 +132,7 @@ val pairFactoryTask = tasks.register<GenerateSrcTask>("pair-factory") {
     group = TASK_GROUP
 
     file.set(generatedDir.map { it.file("pairs-factory.kt") })
-    packageName.set("moe.lasoleil.fastutil")
+    packageName.set(PACKAGE)
     imports.add("it.unimi.dsi.fastutil.Pair")
     imports.addAll(IMPORT_ALL)
 
@@ -151,7 +151,7 @@ val immutableListFactoryTask = tasks.register<GenerateSrcTask>("immutable-list-f
 
     file.set(generatedDir.map { it.file("immutable-list-factory.kt") })
 
-    packageName.set("moe.lasoleil.fastutil")
+    packageName.set(PACKAGE)
     imports.addAll(IMPORT_ALL)
 
     content {
@@ -185,7 +185,7 @@ val mutableListFactoryTask = tasks.register<GenerateSrcTask>("mutable-list-facto
 
     file.set(generatedDir.map { it.file("mutable-list-factory.kt") })
 
-    packageName.set("moe.lasoleil.fastutil")
+    packageName.set(PACKAGE)
     imports.addAll(IMPORT_ALL)
 
     content {
@@ -215,7 +215,7 @@ val mapFastIterableIteratorTask = tasks.register<GenerateSrcTask>("map-fast-iter
     group = TASK_GROUP
 
     file.set(generatedDir.map { it.file("map-fast-iterable-iterator.kt") })
-    packageName.set("moe.lasoleil.fastutil")
+    packageName.set(PACKAGE)
     imports.addAll(IMPORT_ALL)
 
     content {

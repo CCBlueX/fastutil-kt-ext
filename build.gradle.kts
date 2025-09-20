@@ -4,7 +4,7 @@ plugins {
     `java-library`
     `maven-publish`
     kotlin("jvm") version "2.0.0"
-    id("generator")
+    id("fastutil-ext-generator")
 }
 
 group = "moe.lasoleil"
