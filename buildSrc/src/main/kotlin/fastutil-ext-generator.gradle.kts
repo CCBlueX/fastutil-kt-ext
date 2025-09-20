@@ -9,10 +9,12 @@ val generateAllTask = tasks.register("generate-all") {
     dependsOn(
         syncUnmodifiableTask,
         pairComponentNTask,
-        pairFactoryTask,
+//        pairFactoryTask,
         immutableListFactoryTask,
         mutableListFactoryTask,
         mapFastIterableIteratorTask,
+        arrayMapToTypedArrayTask,
+        collectionMapToTypedArrayTask,
     )
 }
 
@@ -32,7 +34,7 @@ val syncUnmodifiableTask = tasks.register<GenerateSrcTask>("sync-unmodifiable") 
     imports.addAll(IMPORT_ALL)
 
     content {
-        FastutilType.values().forEach { type ->
+        forEachTypes { type ->
             for (suffix in arrayOf("BigList", "List", "Set")) {
                 val rawType = type.typeName + suffix
                 if (type.isGeneric) {
@@ -49,9 +51,9 @@ val syncUnmodifiableTask = tasks.register<GenerateSrcTask>("sync-unmodifiable") 
 
         appendLine("inline fun <T> PriorityQueue<T>.synchronized(): PriorityQueue<T> = PriorityQueues.synchronize(this)")
         appendLine("inline fun <T> PriorityQueue<T>.synchronized(lock: Any): PriorityQueue<T> = PriorityQueues.synchronize(this, lock)")
-        FastutilType.values().forEach { type ->
+        forEachTypes { type ->
             if (type.isGeneric || type == FastutilType.BOOLEAN) {
-                return@forEach
+                return@forEachTypes
             } else {
                 val rawType = type.typeName + "PriorityQueue"
                 appendLine("inline fun ${rawType}.synchronized(): $rawType = ${rawType}s.synchronize(this)")
@@ -102,8 +104,8 @@ val pairComponentNTask = tasks.register<GenerateSrcTask>("pair-componentN") {
         appendLine("inline operator fun <K, V> Pair<K, V>.component1() = left()")
         appendLine("inline operator fun <K, V> Pair<K, V>.component2() = right()")
 
-        FastutilType.values().forEach { left ->
-            FastutilType.values().forEach { right ->
+        forEachTypes { left ->
+            forEachTypes { right ->
                 when {
                     left.isGeneric && right.isGeneric -> if (left != FastutilType.OBJECT && right != FastutilType.OBJECT) { // ObjectObjectPair does not exist
                         appendLine("inline operator fun <K, V> ${left}${right}Pair<K, V>.component1() = left()")
@@ -155,7 +157,7 @@ val immutableListFactoryTask = tasks.register<GenerateSrcTask>("immutable-list-f
     imports.addAll(IMPORT_ALL)
 
     content {
-        FastutilType.values().forEach { type ->
+        forEachTypes { type ->
             if (type.isGeneric) {
                 appendLine("inline fun <T> ${type.lowercaseName}ListOf(): ${type.typeName}List<T> = ${type.typeName}Lists.emptyList()")
                 appendLine("inline fun <T> ${type.lowercaseName}ListOf(element: T): ${type.typeName}List<T> = ${type.typeName}Lists.singleton(element)")
@@ -189,7 +191,7 @@ val mutableListFactoryTask = tasks.register<GenerateSrcTask>("mutable-list-facto
     imports.addAll(IMPORT_ALL)
 
     content {
-        FastutilType.values().forEach { type ->
+        forEachTypes { type ->
             if (type.isGeneric) {
                 appendLine("inline fun <T> ${type.lowercaseName}MutableListOf(): ${type.typeName}List<T> = ${type.typeName}ArrayList()")
                 appendLine("inline fun <T> ${type.lowercaseName}MutableListOf(vararg elements: T): ${type.typeName}List<T> = ${type.typeName}ArrayList(elements)")
@@ -237,6 +239,59 @@ val mapFastIterableIteratorTask = tasks.register<GenerateSrcTask>("map-fast-iter
                     appendLine("inline fun ${left}2${right}Map.fastIterable() = ${left}2${right}Maps.fastIterable(this)")
                     appendLine("inline fun ${left}2${right}Map.fastIterator() = ${left}2${right}Maps.fastIterator(this)")
                 }
+            }
+        }
+    }
+}
+
+/**
+ * Example:
+ * - `arrayOf("xxx").mapToIntArray { it.hashCode() }`
+ * - `intArrayOf(...).mapToFloatArray { it * 0.5f }.asFloatList()`
+ */
+val arrayMapToTypedArrayTask = tasks.register<GenerateSrcTask>("array-map-to-typed-array") {
+    group = TASK_GROUP
+
+    file.set(generatedDir.map { it.file("$name.kt") })
+    packageName.set(PACKAGE)
+    imports.addAll(IMPORT_ALL)
+
+    content {
+        // Array map to object array
+        appendLine("inline fun <T, reified R> Array<out T>.mapToArray(transform: (T) -> R): Array<out R> = Array(this.size) { i -> transform(this[i]) }")
+        forEachPrimitiveTypes { type ->
+            appendLine("inline fun <reified R> ${type}Array.mapToArray(transform: (${type}) -> R): Array<out R> = Array(this.size) { i -> transform(this[i]) }")
+        }
+        // Array map to primitive array
+        forEachPrimitiveTypes { result ->
+            appendLine("inline fun <T> Array<out T>.mapTo${result}Array(transform: (T) -> ${result}): ${result}Array = ${result}Array(this.size) { i -> transform(this[i]) }")
+            forEachPrimitiveTypes { receiver ->
+                appendLine("inline fun ${receiver}Array.mapTo${result}Array(transform: (${receiver}) -> ${result}): ${result}Array = ${result}Array(this.size) { i -> transform(this[i]) }")
+            }
+        }
+    }
+}
+
+val collectionMapToTypedArrayTask = tasks.register<GenerateSrcTask>("collection-map-to-typed-array") {
+    group = TASK_GROUP
+
+    file.set(generatedDir.map { it.file("$name.kt") })
+    packageName.set(PACKAGE)
+    imports.addAll(IMPORT_ALL)
+
+    content {
+        // Collection map to object array
+        appendLine("inline fun <T, reified R> Collection<T>.mapToArray(transform: (T) -> R): Array<out R> = iterator().run { Array(size) { transform(next()) } }")
+        forEachTypes { type ->
+            if (!type.isGeneric) {
+                appendLine("inline fun <reified R> ${type}Collection.mapToArray(transform: (${type}) -> R): Array<out R> = iterator().run { Array(size) { transform(next${type}()) } }")
+            }
+        }
+        // Collection map to primitive array
+        forEachPrimitiveTypes { result ->
+            appendLine("inline fun <T> Collection<T>.mapTo${result}Array(transform: (T) -> ${result}): ${result}Array = iterator().run { ${result}Array(size) { transform(next()) } }")
+            forEachPrimitiveTypes { receiver ->
+                appendLine("inline fun ${receiver}Collection.mapTo${result}Array(transform: (${receiver}) -> ${result}): ${result}Array = iterator().run { ${result}Array(size) { transform(next${receiver}()) } }")
             }
         }
     }

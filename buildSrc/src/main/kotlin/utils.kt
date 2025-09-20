@@ -1,8 +1,19 @@
-internal inline fun forEachMapTypes(block: (left: FastutilType, right: FastutilType) -> Unit) {
-    FastutilType.values().forEach { left ->
-        if (left == FastutilType.BOOLEAN) return@forEach // BooleanMap does not exist
+internal inline fun forEachTypes(block: (type: FastutilType) -> Unit) {
+    FastutilType.values().forEach(block)
+}
 
-        FastutilType.values().forEach { right ->
+internal inline fun forEachPrimitiveTypes(block: (type: FastutilType) -> Unit) {
+    FastutilType.values().forEach {
+        if (it.isGeneric) return@forEach
+        block(it)
+    }
+}
+
+internal inline fun forEachMapTypes(block: (left: FastutilType, right: FastutilType) -> Unit) {
+    forEachTypes { left ->
+        if (left == FastutilType.BOOLEAN) return@forEachTypes // BooleanMap does not exist
+
+        forEachTypes { right ->
             block(left, right)
         }
     }
