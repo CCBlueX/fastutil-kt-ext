@@ -22,15 +22,17 @@ repositories {
 }
 
 dependencies {
+    val fastutil = "it.unimi.dsi:fastutil:8.5.15"
     compileOnly(kotlin("stdlib"))
-    compileOnly("it.unimi.dsi:fastutil:8.5.15")
+    compileOnly(fastutil)
 
-//    testImplementation(kotlin("test"))
+    testImplementation(kotlin("test"))
+    testImplementation(fastutil)
 }
 
-//tasks.test {
-//    useJUnitPlatform()
-//}
+tasks.test {
+    useJUnitPlatform()
+}
 
 java {
     sourceCompatibility = JavaVersion.VERSION_1_8
@@ -81,6 +83,10 @@ kotlin {
             kotlin.srcDir(generatorOutput)
         }
     }
+}
+
+tasks.withType<PublishToMavenRepository> {
+    dependsOn(tasks.test)
 }
 
 publishing {
