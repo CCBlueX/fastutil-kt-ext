@@ -27,7 +27,6 @@ val generateAllTask = tasks.register("generate-all") {
 val syncUnmodifiableTask = tasks.register<GenerateSrcTask>("sync-unmodifiable") {
     group = TASK_GROUP
 
-    file.set(generatedDir.map { it.file("sync-unmodifiable.kt") })
     packageName.set(PACKAGE)
     imports.add("it.unimi.dsi.fastutil.PriorityQueue")
     imports.add("it.unimi.dsi.fastutil.PriorityQueues")
@@ -95,7 +94,6 @@ val syncUnmodifiableTask = tasks.register<GenerateSrcTask>("sync-unmodifiable") 
 val pairComponentNTask = tasks.register<GenerateSrcTask>("pair-componentN") {
     group = TASK_GROUP
 
-    file.set(generatedDir.map { it.file("pairs-componentN.kt") })
     packageName.set(PACKAGE)
     imports.add("it.unimi.dsi.fastutil.Pair")
     imports.addAll(IMPORT_ALL)
@@ -133,7 +131,6 @@ val pairComponentNTask = tasks.register<GenerateSrcTask>("pair-componentN") {
 val pairFactoryTask = tasks.register<GenerateSrcTask>("pair-factory") {
     group = TASK_GROUP
 
-    file.set(generatedDir.map { it.file("pairs-factory.kt") })
     packageName.set(PACKAGE)
     imports.add("it.unimi.dsi.fastutil.Pair")
     imports.addAll(IMPORT_ALL)
@@ -151,7 +148,6 @@ val pairFactoryTask = tasks.register<GenerateSrcTask>("pair-factory") {
 val immutableListFactoryTask = tasks.register<GenerateSrcTask>("immutable-list-factory") {
     group = TASK_GROUP
 
-    file.set(generatedDir.map { it.file("immutable-list-factory.kt") })
 
     packageName.set(PACKAGE)
     imports.addAll(IMPORT_ALL)
@@ -185,7 +181,6 @@ val immutableListFactoryTask = tasks.register<GenerateSrcTask>("immutable-list-f
 val mutableListFactoryTask = tasks.register<GenerateSrcTask>("mutable-list-factory") {
     group = TASK_GROUP
 
-    file.set(generatedDir.map { it.file("mutable-list-factory.kt") })
 
     packageName.set(PACKAGE)
     imports.addAll(IMPORT_ALL)
@@ -216,7 +211,6 @@ val mutableListFactoryTask = tasks.register<GenerateSrcTask>("mutable-list-facto
 val mapFastIterableIteratorTask = tasks.register<GenerateSrcTask>("map-fast-iterable-iterator") {
     group = TASK_GROUP
 
-    file.set(generatedDir.map { it.file("map-fast-iterable-iterator.kt") })
     packageName.set(PACKAGE)
     imports.addAll(IMPORT_ALL)
 
@@ -252,7 +246,6 @@ val mapFastIterableIteratorTask = tasks.register<GenerateSrcTask>("map-fast-iter
 val arrayMapToTypedArrayTask = tasks.register<GenerateSrcTask>("array-map-to-typed-array") {
     group = TASK_GROUP
 
-    file.set(generatedDir.map { it.file("$name.kt") })
     packageName.set(PACKAGE)
     imports.addAll(IMPORT_ALL)
 
@@ -275,7 +268,6 @@ val arrayMapToTypedArrayTask = tasks.register<GenerateSrcTask>("array-map-to-typ
 val collectionMapToTypedArrayTask = tasks.register<GenerateSrcTask>("collection-map-to-typed-array") {
     group = TASK_GROUP
 
-    file.set(generatedDir.map { it.file("$name.kt") })
     packageName.set(PACKAGE)
     imports.addAll(IMPORT_ALL)
 
