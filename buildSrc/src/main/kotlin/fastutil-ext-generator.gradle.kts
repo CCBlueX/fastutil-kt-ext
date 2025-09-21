@@ -204,9 +204,10 @@ val mutableListFactoryTask = tasks.register<GenerateSrcTask>("mutable-list-facto
 
 /**
  * Example:
- * - `Int2ObjectOpenHashMap().fastIterable()`
- * - `Int2ObjectOpenHashMap().fastIterator()`
- * - `Int2ObjectOpenHashMap().fastForEach { entry -> ... }`
+ * - `Int2ObjectMap.fastIterable()`
+ * - `Int2ObjectMap.fastIterator()`
+ * - `Int2ObjectMap.fastForEach { entry -> ... }`
+ * - `Int2ObjectMap.fastForEach { k, v -> ... }`
  */
 val mapFastIterableIteratorTask = tasks.register<GenerateSrcTask>("map-fast") {
     group = TASK_GROUP
@@ -224,21 +225,25 @@ val mapFastIterableIteratorTask = tasks.register<GenerateSrcTask>("map-fast") {
                     appendLine("inline fun <K, V> ${rawType}<K, V>.fastIterable(): ObjectIterable<${entryRawType}<K, V>> = ${rawType}s.fastIterable(this)")
                     appendLine("inline fun <K, V> ${rawType}<K, V>.fastIterator(): ObjectIterator<${entryRawType}<K, V>> = ${rawType}s.fastIterator(this)")
                     appendLine("inline fun <K, V> ${rawType}<K, V>.fastForEach(consumer: Consumer<${entryRawType}<K, V>>) = ${rawType}s.fastForEach(this, consumer)")
+                    appendLine("inline fun <K, V> ${rawType}<K, V>.fastForEach(crossinline action: (key: K, value: V) -> Unit) = fastForEach { action(it.key, it.value) }")
                 }
                 left.isGeneric -> {
                     appendLine("inline fun <K> ${rawType}<K>.fastIterable(): ObjectIterable<${entryRawType}<K>> = ${rawType}s.fastIterable(this)")
                     appendLine("inline fun <K> ${rawType}<K>.fastIterator(): ObjectIterator<${entryRawType}<K>> = ${rawType}s.fastIterator(this)")
                     appendLine("inline fun <K> ${rawType}<K>.fastForEach(consumer: Consumer<${entryRawType}<K>>) = ${rawType}s.fastForEach(this, consumer)")
+                    appendLine("inline fun <K> ${rawType}<K>.fastForEach(crossinline action: (key: K, value: $right) -> Unit) = fastForEach { action(it.key, it.${right.lowercaseName}Value) }")
                 }
                 right.isGeneric -> {
                     appendLine("inline fun <V> ${rawType}<V>.fastIterable(): ObjectIterable<${entryRawType}<V>> = ${rawType}s.fastIterable(this)")
                     appendLine("inline fun <V> ${rawType}<V>.fastIterator(): ObjectIterator<${entryRawType}<V>> = ${rawType}s.fastIterator(this)")
                     appendLine("inline fun <V> ${rawType}<V>.fastForEach(consumer: Consumer<${entryRawType}<V>>) = ${rawType}s.fastForEach(this, consumer)")
+                    appendLine("inline fun <V> ${rawType}<V>.fastForEach(crossinline action: (key: $left, value: V) -> Unit) = fastForEach { action(it.${left.lowercaseName}Key, it.value) }")
                 }
                 else -> {
                     appendLine("inline fun ${rawType}.fastIterable(): ObjectIterable<${entryRawType}> = ${rawType}s.fastIterable(this)")
                     appendLine("inline fun ${rawType}.fastIterator(): ObjectIterator<${entryRawType}> = ${rawType}s.fastIterator(this)")
                     appendLine("inline fun ${rawType}.fastForEach(consumer: Consumer<${entryRawType}>) = ${rawType}s.fastForEach(this, consumer)")
+                    appendLine("inline fun ${rawType}.fastForEach(crossinline action: (key: $left, value: $right) -> Unit) = fastForEach { action(it.${left.lowercaseName}Key, it.${right.lowercaseName}Value) }")
                 }
             }
         }
