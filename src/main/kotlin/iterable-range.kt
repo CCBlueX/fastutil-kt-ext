@@ -62,8 +62,6 @@ infix fun ClosedRange<Double>.step(step: Double): DoubleList {
             return if (forward) start + step * index else start - step * index
         }
 
-        override fun add(k: Double) = throw UnsupportedOperationException("Readonly list")
-
         override val size: Int get() = size
     }
 }
@@ -116,8 +114,6 @@ infix fun ClosedRange<Float>.step(step: Float): FloatList {
             super.ensureRestrictedIndex(index)
             return if (forward) start + step * index else start - step * index
         }
-
-        override fun add(k: Float) = throw UnsupportedOperationException("Readonly list")
 
         override val size: Int get() = size
     }
