@@ -167,17 +167,23 @@ val immutableListFactoryTask = tasks.register<GenerateSrcTask>("immutable-list-f
 
     content {
         forEachTypes { type ->
+            val emptyList = "${type.typeName}Lists.emptyList()"
+            fun singletonList(placeholder: String = "element") = "${type.typeName}Lists.singleton($placeholder)"
             if (type.isGeneric) {
-                appendLine("inline fun <T> ${type.lowercaseName}ListOf(): ${type.typeName}List<T> = ${type.typeName}Lists.emptyList()")
-                appendLine("inline fun <T> ${type.lowercaseName}ListOf(element: T): ${type.typeName}List<T> = ${type.typeName}Lists.singleton(element)")
-                appendLine("inline fun <T> ${type.lowercaseName}ListOf(vararg elements: T): ${type.typeName}List<T> = ${type.typeName}ImmutableList(elements)")
+                appendLine("inline fun <T> ${type.typeName}List<T>?.orEmpty(): ${type.typeName}List<T> = this ?: $emptyList")
+                appendLine("inline fun <T> ${type.lowercaseName}ListOf(): ${type.typeName}List<T> = $emptyList")
+                appendLine("inline fun <T> ${type.lowercaseName}ListOf(element: T): ${type.typeName}List<T> = ${singletonList()}")
+                appendLine("inline fun <T> ${type.lowercaseName}ListOf(vararg elements: T): ${type.typeName}List<T> =")
+                appendLine("when(elements.size) { 0 -> $emptyList 1 -> ${singletonList("elements[0]")} else -> ${type.typeName}ImmutableList(elements) }")
 
                 appendLine("inline fun <T> Array<out T>.as${type.typeName}List(): ${type.typeName}List<T> = ${type.typeName}ImmutableList(this)")
                 appendLine("inline fun <T> Array<out T>.as${type.typeName}List(offset: Int = 0, length: Int = this.size): ${type.typeName}List<T> = ${type.typeName}ImmutableList(this, offset, length)")
             } else {
-                appendLine("inline fun ${type.lowercaseName}ListOf(): ${type.typeName}List = ${type.typeName}Lists.emptyList()")
-                appendLine("inline fun ${type.lowercaseName}ListOf(element: ${type.typeName}): ${type.typeName}List = ${type.typeName}Lists.singleton(element)")
-                appendLine("inline fun ${type.lowercaseName}ListOf(vararg elements: ${type.typeName}): ${type.typeName}List = ${type.typeName}ImmutableList(elements)")
+                appendLine("inline fun ${type.typeName}List?.orEmpty(): ${type.typeName}List = this ?: $emptyList")
+                appendLine("inline fun ${type.lowercaseName}ListOf(): ${type.typeName}List = $emptyList")
+                appendLine("inline fun ${type.lowercaseName}ListOf(element: ${type.typeName}): ${type.typeName}List = ${singletonList()}")
+                appendLine("inline fun ${type.lowercaseName}ListOf(vararg elements: ${type.typeName}): ${type.typeName}List =")
+                appendLine("when(elements.size) { 0 -> $emptyList 1 -> ${singletonList("elements[0]")} else -> ${type.typeName}ImmutableList(elements) }")
 
                 appendLine("inline fun ${type.typeName}Array.as${type.typeName}List(): ${type.typeName}List = ${type.typeName}ImmutableList(this)")
                 appendLine("inline fun ${type.typeName}Array.as${type.typeName}List(offset: Int = 0, length: Int = this.size): ${type.typeName}List = ${type.typeName}ImmutableList(this, offset, length)")
