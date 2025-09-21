@@ -149,7 +149,6 @@ val pairFactoryTask = tasks.register<GenerateSrcTask>("pair-factory") {
 val immutableListFactoryTask = tasks.register<GenerateSrcTask>("immutable-list-factory") {
     group = TASK_GROUP
 
-
     packageName.set(PACKAGE)
     imports.addAll(IMPORT_ALL)
 
@@ -182,7 +181,6 @@ val immutableListFactoryTask = tasks.register<GenerateSrcTask>("immutable-list-f
 val mutableListFactoryTask = tasks.register<GenerateSrcTask>("mutable-list-factory") {
     group = TASK_GROUP
 
-
     packageName.set(PACKAGE)
     imports.addAll(IMPORT_ALL)
 
@@ -208,32 +206,39 @@ val mutableListFactoryTask = tasks.register<GenerateSrcTask>("mutable-list-facto
  * Example:
  * - `Int2ObjectOpenHashMap().fastIterable()`
  * - `Int2ObjectOpenHashMap().fastIterator()`
+ * - `Int2ObjectOpenHashMap().fastForEach { entry -> ... }`
  */
-val mapFastIterableIteratorTask = tasks.register<GenerateSrcTask>("map-fast-iterable-iterator") {
+val mapFastIterableIteratorTask = tasks.register<GenerateSrcTask>("map-fast") {
     group = TASK_GROUP
 
     packageName.set(PACKAGE)
+    imports.add("java.util.function.Consumer")
     imports.addAll(IMPORT_ALL)
 
     content {
         forEachMapTypes { left, right ->
             val rawType = "${left}2${right}Map"
+            val entryRawType = "${rawType}.Entry"
             when {
                 left.isGeneric && right.isGeneric -> {
-                    appendLine("inline fun <K, V> ${rawType}<K, V>.fastIterable() = ${rawType}s.fastIterable(this)")
-                    appendLine("inline fun <K, V> ${rawType}<K, V>.fastIterator() = ${rawType}s.fastIterator(this)")
+                    appendLine("inline fun <K, V> ${rawType}<K, V>.fastIterable(): ObjectIterable<${entryRawType}<K, V>> = ${rawType}s.fastIterable(this)")
+                    appendLine("inline fun <K, V> ${rawType}<K, V>.fastIterator(): ObjectIterator<${entryRawType}<K, V>> = ${rawType}s.fastIterator(this)")
+                    appendLine("inline fun <K, V> ${rawType}<K, V>.fastForEach(consumer: Consumer<${entryRawType}<K, V>>) = ${rawType}s.fastForEach(this, consumer)")
                 }
                 left.isGeneric -> {
-                    appendLine("inline fun <K> ${rawType}<K>.fastIterable() = ${rawType}s.fastIterable(this)")
-                    appendLine("inline fun <K> ${rawType}<K>.fastIterator() = ${rawType}s.fastIterator(this)")
+                    appendLine("inline fun <K> ${rawType}<K>.fastIterable(): ObjectIterable<${entryRawType}<K>> = ${rawType}s.fastIterable(this)")
+                    appendLine("inline fun <K> ${rawType}<K>.fastIterator(): ObjectIterator<${entryRawType}<K>> = ${rawType}s.fastIterator(this)")
+                    appendLine("inline fun <K> ${rawType}<K>.fastForEach(consumer: Consumer<${entryRawType}<K>>) = ${rawType}s.fastForEach(this, consumer)")
                 }
                 right.isGeneric -> {
-                    appendLine("inline fun <V> ${rawType}<V>.fastIterable() = ${rawType}s.fastIterable(this)")
-                    appendLine("inline fun <V> ${rawType}<V>.fastIterator() = ${rawType}s.fastIterator(this)")
+                    appendLine("inline fun <V> ${rawType}<V>.fastIterable(): ObjectIterable<${entryRawType}<V>> = ${rawType}s.fastIterable(this)")
+                    appendLine("inline fun <V> ${rawType}<V>.fastIterator(): ObjectIterator<${entryRawType}<V>> = ${rawType}s.fastIterator(this)")
+                    appendLine("inline fun <V> ${rawType}<V>.fastForEach(consumer: Consumer<${entryRawType}<V>>) = ${rawType}s.fastForEach(this, consumer)")
                 }
                 else -> {
-                    appendLine("inline fun ${rawType}.fastIterable() = ${rawType}s.fastIterable(this)")
-                    appendLine("inline fun ${rawType}.fastIterator() = ${rawType}s.fastIterator(this)")
+                    appendLine("inline fun ${rawType}.fastIterable(): ObjectIterable<${entryRawType}> = ${rawType}s.fastIterable(this)")
+                    appendLine("inline fun ${rawType}.fastIterator(): ObjectIterator<${entryRawType}> = ${rawType}s.fastIterator(this)")
+                    appendLine("inline fun ${rawType}.fastForEach(consumer: Consumer<${entryRawType}>) = ${rawType}s.fastForEach(this, consumer)")
                 }
             }
         }
