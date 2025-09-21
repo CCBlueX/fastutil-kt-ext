@@ -258,9 +258,9 @@ val arrayMapToTypedArrayTask = tasks.register<GenerateSrcTask>("array-map-to-typ
 
     content {
         // Array map to object array
-        appendLine("inline fun <T, reified R> Array<out T>.mapToArray(transform: (T) -> R): Array<out R> = Array(this.size) { i -> transform(this[i]) }")
+        appendLine("inline fun <T, reified R> Array<out T>.mapToArray(transform: (T) -> R): Array<R> = Array(this.size) { i -> transform(this[i]) }")
         forEachPrimitiveTypes { type ->
-            appendLine("inline fun <reified R> ${type}Array.mapToArray(transform: (${type}) -> R): Array<out R> = Array(this.size) { i -> transform(this[i]) }")
+            appendLine("inline fun <reified R> ${type}Array.mapToArray(transform: (${type}) -> R): Array<R> = Array(this.size) { i -> transform(this[i]) }")
         }
         // Array map to primitive array
         forEachPrimitiveTypes { result ->
@@ -281,10 +281,10 @@ val collectionMapToTypedArrayTask = tasks.register<GenerateSrcTask>("collection-
 
     content {
         // Collection map to object array
-        appendLine("inline fun <T, reified R> Collection<T>.mapToArray(transform: (T) -> R): Array<out R> = iterator().run { Array(size) { transform(next()) } }")
+        appendLine("inline fun <T, reified R> Collection<T>.mapToArray(transform: (T) -> R): Array<R> = iterator().run { Array(size) { transform(next()) } }")
         forEachTypes { type ->
             if (!type.isGeneric) {
-                appendLine("inline fun <reified R> ${type}Collection.mapToArray(transform: (${type}) -> R): Array<out R> = iterator().run { Array(size) { transform(next${type}()) } }")
+                appendLine("inline fun <reified R> ${type}Collection.mapToArray(transform: (${type}) -> R): Array<R> = iterator().run { Array(size) { transform(next${type}()) } }")
             }
         }
         // Collection map to primitive array
