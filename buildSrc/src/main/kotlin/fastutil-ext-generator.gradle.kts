@@ -28,11 +28,24 @@ val syncUnmodifiableTask = tasks.register<GenerateSrcTask>("sync-unmodifiable") 
     group = TASK_GROUP
 
     packageName.set(PACKAGE)
+    imports.add("java.util.*")
     imports.add("it.unimi.dsi.fastutil.PriorityQueue")
     imports.add("it.unimi.dsi.fastutil.PriorityQueues")
     imports.addAll(IMPORT_ALL)
 
     content {
+        // For java.util.Collections
+        // Java 21+ -> "SequencedCollection", "SequencedMap", "SequencedSet"
+        for (rawType in arrayOf("Collection", "List", "Map", "Set", "NavigableMap", "NavigableSet", "SortedMap", "SortedSet")) {
+            if (rawType.endsWith("Map")) {
+                appendLine("inline fun <K, V> ${rawType}<K, V>.unmodifiable(): ${rawType}<K, V> = Collections.unmodifiable${rawType}(this)")
+                appendLine("inline fun <K, V> ${rawType}<K, V>.synchronized(): ${rawType}<K, V> = Collections.synchronized${rawType}(this)")
+            } else {
+                appendLine("inline fun <T> ${rawType}<T>.unmodifiable(): ${rawType}<T> = Collections.unmodifiable${rawType}(this)")
+                appendLine("inline fun <T> ${rawType}<T>.synchronized(): ${rawType}<T> = Collections.synchronized${rawType}(this)")
+            }
+        }
+
         forEachTypes { type ->
             for (suffix in arrayOf("BigList", "List", "Set")) {
                 val rawType = type.typeName + suffix
