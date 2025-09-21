@@ -1,6 +1,6 @@
 internal const val TASK_GROUP = "fastutil-ext-generator"
 
-internal const val PACKAGE = "moe.lasoleil.fastutil"
+internal const val PACKAGE = "net.ccbluex.fastutil"
 
 @JvmField
 internal val IMPORT_ALL =
