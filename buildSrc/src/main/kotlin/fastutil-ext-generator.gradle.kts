@@ -61,26 +61,27 @@ val syncUnmodifiableTask = tasks.register<GenerateSrcTask>("sync-unmodifiable") 
         }
 
         forEachMapTypes { left, right ->
+            val rawType = "${left}2${right}Map"
             when {
                 left.isGeneric && right.isGeneric -> {
-                    appendLine("inline fun <K, V> ${left}2${right}Map<K, V>.synchronized() = ${left}2${right}Maps.synchronize(this)")
-                    appendLine("inline fun <K, V> ${left}2${right}Map<K, V>.synchronized(lock: Any) = ${left}2${right}Maps.synchronize(this, lock)")
-                    appendLine("inline fun <K, V> ${left}2${right}Map<K, V>.unmodifiable() = ${left}2${right}Maps.unmodifiable(this)")
+                    appendLine("inline fun <K, V> ${rawType}<K, V>.synchronized(): ${rawType}<K, V> = ${rawType}s.synchronize(this)")
+                    appendLine("inline fun <K, V> ${rawType}<K, V>.synchronized(lock: Any): ${rawType}<K, V> = ${rawType}s.synchronize(this, lock)")
+                    appendLine("inline fun <K, V> ${rawType}<K, V>.unmodifiable(): ${rawType}<K, V> = ${rawType}s.unmodifiable(this)")
                 }
                 left.isGeneric -> {
-                    appendLine("inline fun <K> ${left}2${right}Map<K>.synchronized() = ${left}2${right}Maps.synchronize(this)")
-                    appendLine("inline fun <K> ${left}2${right}Map<K>.synchronized(lock: Any) = ${left}2${right}Maps.synchronize(this, lock)")
-                    appendLine("inline fun <K> ${left}2${right}Map<K>.unmodifiable() = ${left}2${right}Maps.unmodifiable(this)")
+                    appendLine("inline fun <K> ${rawType}<K>.synchronized(): ${rawType}<K> = ${rawType}s.synchronize(this)")
+                    appendLine("inline fun <K> ${rawType}<K>.synchronized(lock: Any): ${rawType}<K> = ${rawType}s.synchronize(this, lock)")
+                    appendLine("inline fun <K> ${rawType}<K>.unmodifiable(): ${rawType}<K> = ${rawType}s.unmodifiable(this)")
                 }
                 right.isGeneric -> {
-                    appendLine("inline fun <V> ${left}2${right}Map<V>.synchronized() = ${left}2${right}Maps.synchronize(this)")
-                    appendLine("inline fun <V> ${left}2${right}Map<V>.synchronized(lock: Any) = ${left}2${right}Maps.synchronize(this, lock)")
-                    appendLine("inline fun <V> ${left}2${right}Map<V>.unmodifiable() = ${left}2${right}Maps.unmodifiable(this)")
+                    appendLine("inline fun <V> ${rawType}<V>.synchronized(): ${rawType}<V> = ${rawType}s.synchronize(this)")
+                    appendLine("inline fun <V> ${rawType}<V>.synchronized(lock: Any): ${rawType}<V> = ${rawType}s.synchronize(this, lock)")
+                    appendLine("inline fun <V> ${rawType}<V>.unmodifiable(): ${rawType}<V> = ${rawType}s.unmodifiable(this)")
                 }
                 else -> {
-                    appendLine("inline fun ${left}2${right}Map.synchronized() = ${left}2${right}Maps.synchronize(this)")
-                    appendLine("inline fun ${left}2${right}Map.synchronized(lock: Any) = ${left}2${right}Maps.synchronize(this, lock)")
-                    appendLine("inline fun ${left}2${right}Map.unmodifiable() = ${left}2${right}Maps.unmodifiable(this)")
+                    appendLine("inline fun ${rawType}.synchronized(): $rawType = ${rawType}s.synchronize(this)")
+                    appendLine("inline fun ${rawType}.synchronized(lock: Any): $rawType = ${rawType}s.synchronize(this, lock)")
+                    appendLine("inline fun ${rawType}.unmodifiable(): $rawType = ${rawType}s.unmodifiable(this)")
                 }
             }
         }
@@ -216,22 +217,23 @@ val mapFastIterableIteratorTask = tasks.register<GenerateSrcTask>("map-fast-iter
 
     content {
         forEachMapTypes { left, right ->
+            val rawType = "${left}2${right}Map"
             when {
                 left.isGeneric && right.isGeneric -> {
-                    appendLine("inline fun <K, V> ${left}2${right}Map<K, V>.fastIterable() = ${left}2${right}Maps.fastIterable(this)")
-                    appendLine("inline fun <K, V> ${left}2${right}Map<K, V>.fastIterator() = ${left}2${right}Maps.fastIterator(this)")
+                    appendLine("inline fun <K, V> ${rawType}<K, V>.fastIterable() = ${rawType}s.fastIterable(this)")
+                    appendLine("inline fun <K, V> ${rawType}<K, V>.fastIterator() = ${rawType}s.fastIterator(this)")
                 }
                 left.isGeneric -> {
-                    appendLine("inline fun <K> ${left}2${right}Map<K>.fastIterable() = ${left}2${right}Maps.fastIterable(this)")
-                    appendLine("inline fun <K> ${left}2${right}Map<K>.fastIterator() = ${left}2${right}Maps.fastIterator(this)")
+                    appendLine("inline fun <K> ${rawType}<K>.fastIterable() = ${rawType}s.fastIterable(this)")
+                    appendLine("inline fun <K> ${rawType}<K>.fastIterator() = ${rawType}s.fastIterator(this)")
                 }
                 right.isGeneric -> {
-                    appendLine("inline fun <V> ${left}2${right}Map<V>.fastIterable() = ${left}2${right}Maps.fastIterable(this)")
-                    appendLine("inline fun <V> ${left}2${right}Map<V>.fastIterator() = ${left}2${right}Maps.fastIterator(this)")
+                    appendLine("inline fun <V> ${rawType}<V>.fastIterable() = ${rawType}s.fastIterable(this)")
+                    appendLine("inline fun <V> ${rawType}<V>.fastIterator() = ${rawType}s.fastIterator(this)")
                 }
                 else -> {
-                    appendLine("inline fun ${left}2${right}Map.fastIterable() = ${left}2${right}Maps.fastIterable(this)")
-                    appendLine("inline fun ${left}2${right}Map.fastIterator() = ${left}2${right}Maps.fastIterator(this)")
+                    appendLine("inline fun ${rawType}.fastIterable() = ${rawType}s.fastIterable(this)")
+                    appendLine("inline fun ${rawType}.fastIterator() = ${rawType}s.fastIterator(this)")
                 }
             }
         }
