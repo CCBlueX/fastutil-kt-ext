@@ -8,7 +8,7 @@ plugins {
 }
 
 group = "net.ccbluex"
-version = "0.1.2"
+version = "0.1.3"
 
 val projectName = project.name
 val projectDescription = "Kotlin extensions for vigna's fastutil"
