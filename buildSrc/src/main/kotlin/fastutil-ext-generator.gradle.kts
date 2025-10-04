@@ -15,6 +15,7 @@ val generateAllTask = tasks.register("generate-all") {
         mapFastIterableIteratorTask,
         arrayMapToTypedArrayTask,
         collectionMapToTypedArrayTask,
+        typedIterableForEachTask,
     )
 }
 
@@ -316,6 +317,36 @@ val collectionMapToTypedArrayTask = tasks.register<GenerateSrcTask>("collection-
             forEachPrimitiveTypes { receiver ->
                 appendLine("inline fun ${receiver}Collection.mapTo${result}Array(transform: (${receiver}) -> ${result}): ${result}Array = iterator().run { ${result}Array(size) { transform(next${receiver}()) } }")
             }
+        }
+    }
+}
+
+/**
+ * Example:
+ * - `intListOf().forEachInt { println(it) }`
+ */
+val typedIterableForEachTask = tasks.register<GenerateSrcTask>("typed-iterable-forEach") {
+    group = TASK_GROUP
+
+    packageName.set(PACKAGE)
+    imports.addAll(IMPORT_ALL)
+
+    content {
+        forEachPrimitiveTypes { type ->
+            // Iterator forEach
+            appendLine("inline fun ${type}Iterator.forEach${type}(action: (${type}) -> Unit) { while (hasNext()) action(next$type()) }")
+
+            // Iterable forEach
+            appendLine("inline fun ${type}Iterable.forEach${type}(action: (${type}) -> Unit) = iterator().forEach(action)")
+
+            // Iterable onEach
+            appendLine("inline fun ${type}Iterable.onEach${type}(action: (${type}) -> Unit) = apply { forEach(action) }")
+
+            // Iterable forEachIndexed
+            appendLine("inline fun ${type}Iterable.forEach${type}Indexed(action: (index: Int, ${type}) -> Unit) {")
+            appendLine("    var index = 0")
+            appendLine("    iterator().forEach { action(index++, it) }")
+            appendLine("}")
         }
     }
 }
