@@ -340,7 +340,7 @@ val typedIterableForEachTask = tasks.register<GenerateSrcTask>("typed-iterable-f
             appendLine("inline fun ${type}Iterable.forEach${type}(action: (${type}) -> Unit) = iterator().forEach(action)")
 
             // Iterable onEach
-            appendLine("inline fun ${type}Iterable.onEach${type}(action: (${type}) -> Unit) = apply { forEach(action) }")
+            appendLine("inline fun <T : ${type}Iterable> T.onEach${type}(action: (${type}) -> Unit): T = apply { forEach(action) }")
 
             // Iterable forEachIndexed
             appendLine("inline fun ${type}Iterable.forEach${type}Indexed(action: (index: Int, ${type}) -> Unit) {")
