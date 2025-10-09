@@ -91,9 +91,9 @@ private constructor(
      */
     constructor(
         defaultCapacity: Int = 0,
-        lowerBound: Double,
+        lowerBound: Double = Double.MIN_VALUE,
         lowerBoundInclusive: Boolean = true,
-        upperBound: Double,
+        upperBound: Double = Double.MAX_VALUE,
         upperBoundInclusive: Boolean = true,
         weighter: Object2DoubleFunction<in E>,
     ) : this(
