@@ -5,6 +5,7 @@ import it.unimi.dsi.fastutil.doubles.DoubleArrayList
 import it.unimi.dsi.fastutil.objects.*
 import java.util.*
 import java.util.function.Predicate
+import java.util.function.ToDoubleFunction
 import java.util.function.UnaryOperator
 /**
  * A list of elements kept sorted by their associated weight (non-decreasing).
@@ -61,7 +62,7 @@ private constructor(
     val lowerBoundInclusive: Boolean,
     val upperBound: Double,
     val upperBoundInclusive: Boolean,
-    val weighter: Object2DoubleFunction<in E>,
+    val weighter: ToDoubleFunction<in E>,
 ) : ObjectList<E> by items, RandomAccess, Object2DoubleFunction<E> {
 
     init {
@@ -95,7 +96,7 @@ private constructor(
         lowerBoundInclusive: Boolean = true,
         upperBound: Double = Double.MAX_VALUE,
         upperBoundInclusive: Boolean = true,
-        weighter: Object2DoubleFunction<in E>,
+        weighter: ToDoubleFunction<in E>,
     ) : this(
         ObjectArrayList<E>(defaultCapacity),
         DoubleArrayList(defaultCapacity),
@@ -167,7 +168,7 @@ private constructor(
     }
 
     @Suppress("NOTHING_TO_INLINE")
-    private inline fun computeWeight(e: E): Double = weighter.getDouble(e)
+    private inline fun computeWeight(e: E): Double = weighter.applyAsDouble(e)
 
     /**
      * Insert `element` into the list at the correct sorted position according to its weight.
