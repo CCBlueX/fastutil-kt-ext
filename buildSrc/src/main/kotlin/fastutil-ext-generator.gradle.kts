@@ -16,6 +16,7 @@ val generateAllTask = tasks.register("generate-all") {
         arrayMapToTypedArrayTask,
         collectionMapToTypedArrayTask,
         typedIterableForEachTask,
+        arrayAndListSwapTask,
     )
 }
 
@@ -306,10 +307,8 @@ val collectionMapToTypedArrayTask = tasks.register<GenerateSrcTask>("collection-
     content {
         // Collection map to object array
         appendLine("inline fun <T, reified R> Collection<T>.mapToArray(transform: (T) -> R): Array<R> = iterator().run { Array(size) { transform(next()) } }")
-        forEachTypes { type ->
-            if (!type.isGeneric) {
-                appendLine("inline fun <reified R> ${type}Collection.mapToArray(transform: (${type}) -> R): Array<R> = iterator().run { Array(size) { transform(next${type}()) } }")
-            }
+        forEachPrimitiveTypes { type ->
+            appendLine("inline fun <reified R> ${type}Collection.mapToArray(transform: (${type}) -> R): Array<R> = iterator().run { Array(size) { transform(next${type}()) } }")
         }
         // Collection map to primitive array
         forEachPrimitiveTypes { result ->
@@ -347,6 +346,31 @@ val typedIterableForEachTask = tasks.register<GenerateSrcTask>("typed-iterable-f
             appendLine("    var index = 0")
             appendLine("    iterator().forEach { action(index++, it) }")
             appendLine("}")
+        }
+    }
+}
+
+/**
+ * Example:
+ * - `intListOf().swap(1, 2)`
+ */
+val arrayAndListSwapTask = tasks.register<GenerateSrcTask>("array-and-list-swap") {
+    group = TASK_GROUP
+
+    packageName.set(PACKAGE)
+    imports.addAll(IMPORT_ALL)
+
+    content {
+        // Array
+        appendLine("inline fun <T> Array<T>.swap(i: Int, j: Int) { val t = this[j]; this[j] = this[i]; this[i] = t }")
+        forEachPrimitiveTypes { type ->
+            appendLine("inline fun ${type}Array.swap(i: Int, j: Int) { val t = this[j]; this[j] = this[i]; this[i] = t }")
+        }
+
+        // List
+        appendLine("inline fun <T> MutableList<T>.swap(i: Int, j: Int) { val t = this[j]; this[j] = this[i]; this[i] = t }")
+        forEachPrimitiveTypes { type ->
+            appendLine("inline fun ${type}List.swap(i: Int, j: Int) { val t = this.get${type}(j); this.set(j, this.get${type}(i)); this.set(i, t) }")
         }
     }
 }
