@@ -39,12 +39,13 @@ val syncUnmodifiableTask = tasks.register<GenerateSrcTask>("sync-unmodifiable") 
         // For java.util.Collections
         // Java 21+ -> "SequencedCollection", "SequencedMap", "SequencedSet"
         for (rawType in arrayOf("Collection", "List", "Map", "Set", "NavigableMap", "NavigableSet", "SortedMap", "SortedSet")) {
+            val ktType = if (rawType in arrayOf("Collection", "List", "Map", "Set")) "Mutable$rawType" else rawType
             if (rawType.endsWith("Map")) {
-                appendLine("inline fun <K, V> ${rawType}<K, V>.unmodifiable(): ${rawType}<K, V> = Collections.unmodifiable${rawType}(this)")
-                appendLine("inline fun <K, V> ${rawType}<K, V>.synchronized(): ${rawType}<K, V> = Collections.synchronized${rawType}(this)")
+                appendLine("inline fun <K, V> ${ktType}<K, V>.unmodifiable(): ${rawType}<K, V> = Collections.unmodifiable${rawType}(this)")
+                appendLine("inline fun <K, V> ${ktType}<K, V>.synchronized(): ${ktType}<K, V> = Collections.synchronized${rawType}(this)")
             } else {
-                appendLine("inline fun <T> ${rawType}<T>.unmodifiable(): ${rawType}<T> = Collections.unmodifiable${rawType}(this)")
-                appendLine("inline fun <T> ${rawType}<T>.synchronized(): ${rawType}<T> = Collections.synchronized${rawType}(this)")
+                appendLine("inline fun <T> ${ktType}<T>.unmodifiable(): ${rawType}<T> = Collections.unmodifiable${rawType}(this)")
+                appendLine("inline fun <T> ${ktType}<T>.synchronized(): ${ktType}<T> = Collections.synchronized${rawType}(this)")
             }
         }
 
