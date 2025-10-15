@@ -1,5 +1,3 @@
-val generatedDir = layout.buildDirectory.dir("generated/sources")
-
 tasks.named("compileKotlin") {
     dependsOn(generateAllTask)
 }

@@ -1,0 +1,9 @@
+[versions]
+fastutil = "8.5.15"
+kotlin = "2.0.0"
+
+[libraries]
+fastutil = { module = "it.unimi.dsi:fastutil", version.ref = "fastutil" }
+
+[plugins]
+kotlin = { id = "org.jetbrains.kotlin.jvm", version.ref = "kotlin" }

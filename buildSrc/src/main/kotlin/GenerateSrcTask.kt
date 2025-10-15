@@ -26,8 +26,7 @@ abstract class GenerateSrcTask : DefaultTask() {
 
     init {
         file.convention(
-            this.project.layout.buildDirectory
-                .dir("generated/sources")
+            this.project.fastutilGeneratorOutput
                 .map { it.file(this.name + ".kt") }
         )
     }

@@ -1,3 +1,5 @@
+import org.gradle.api.Project
+
 internal inline fun forEachTypes(block: (type: FastutilType) -> Unit) {
     FastutilType.values().forEach(block)
 }
@@ -18,3 +20,5 @@ internal inline fun forEachMapTypes(block: (left: FastutilType, right: FastutilT
         }
     }
 }
+
+val Project.fastutilGeneratorOutput get() = layout.buildDirectory.dir("generated/fastutil-kt")
