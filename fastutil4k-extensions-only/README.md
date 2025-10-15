@@ -13,6 +13,6 @@ repositories {
 }
 
 dependencies {
-    compileOnly("") // TODO
+    compileOnly("net.ccbluex:fastutil4k-extensions-only:$version")
 }
 ```

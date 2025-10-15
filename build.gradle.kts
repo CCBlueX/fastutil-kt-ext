@@ -1,7 +1,10 @@
+import org.jetbrains.dokka.gradle.DokkaTask
+
 plugins {
     `java-library`
-    alias(libs.plugins.kotlin)
     `maven-publish` apply true
+    alias(libs.plugins.kotlin)
+    alias(libs.plugins.dokka)
 }
 
 val projectName = project.name
@@ -20,10 +23,17 @@ allprojects {
     }
 }
 
+tasks.withType<DokkaTask>().configureEach {
+    dokkaSourceSets.configureEach {
+        jdkVersion.set(8)
+    }
+}
+
 subprojects {
     apply(plugin = "java-library")
     apply(plugin = "maven-publish")
     apply(plugin = "org.jetbrains.kotlin.jvm")
+    apply(plugin = "org.jetbrains.dokka")
 
     java {
         sourceCompatibility = JavaVersion.VERSION_1_8

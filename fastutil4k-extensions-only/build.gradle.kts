@@ -14,3 +14,11 @@ kotlin {
         }
     }
 }
+
+tasks.dokkaHtmlPartial {
+    dependsOn("generate-all")
+
+    dokkaSourceSets.configureEach {
+        sourceRoots.from(fastutilGeneratorOutput)
+    }
+}
