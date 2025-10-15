@@ -2,11 +2,14 @@ package net.ccbluex.fastutil
 
 import it.unimi.dsi.fastutil.Arrays
 import it.unimi.dsi.fastutil.doubles.DoubleArrayList
-import it.unimi.dsi.fastutil.objects.*
-import java.util.*
+import it.unimi.dsi.fastutil.objects.Object2DoubleFunction
+import it.unimi.dsi.fastutil.objects.ObjectArrayList
+import it.unimi.dsi.fastutil.objects.ObjectList
+import it.unimi.dsi.fastutil.objects.ObjectListIterator
 import java.util.function.Predicate
 import java.util.function.ToDoubleFunction
 import java.util.function.UnaryOperator
+
 /**
  * A list of elements kept sorted by their associated weight (non-decreasing).
  *
@@ -63,7 +66,9 @@ private constructor(
     val upperBound: Double,
     val upperBoundInclusive: Boolean,
     val weighter: ToDoubleFunction<in E>,
-) : ObjectList<E> by items, RandomAccess, Object2DoubleFunction<E> {
+) : ObjectList<E> by items,
+    RandomAccess,
+    Object2DoubleFunction<E> {
 
     init {
         if (items.size != weights.size) {
@@ -74,10 +79,11 @@ private constructor(
             if (!inBounds(w)) throw IllegalArgumentException("weight at index $i out of bounds: $w")
             if (i > 0) {
                 val prev = weights.getDouble(i - 1)
-                if (prev > w) throw IllegalArgumentException("weights must be non-decreasing: index ${i-1} has $prev, index $i has $w")
+                if (prev > w) throw IllegalArgumentException("weights must be non-decreasing: index ${i - 1} has $prev, index $i has $w")
             }
         }
     }
+
     /**
      * Convenience constructor that creates empty internal storage with the given default capacity.
      *
@@ -115,7 +121,7 @@ private constructor(
     private var defaultReturnValue = 0.0
 
     /**
-     * @see AbstractObjectList.ensureIndex
+     * @see it.unimi.dsi.fastutil.objects.AbstractObjectList.ensureIndex
      */
     private fun ensureIndex(index: Int) {
         if (index < 0) throw IndexOutOfBoundsException("Index ($index) is negative")
@@ -123,20 +129,16 @@ private constructor(
     }
 
     /**
-     * @see AbstractObjectList.ensureRestrictedIndex
+     * @see it.unimi.dsi.fastutil.objects.AbstractObjectList.ensureRestrictedIndex
      */
     private fun ensureRestrictedIndex(index: Int) {
         if (index < 0) throw IndexOutOfBoundsException("Index ($index) is negative")
         if (index >= size) throw IndexOutOfBoundsException("Index ($index) is greater than or equal to list size ($size)")
     }
-    
-    private fun inLowerBound(w: Double): Boolean {
-        return if (lowerBoundInclusive) w >= lowerBound else w > lowerBound
-    }
 
-    private fun inUpperBound(w: Double): Boolean {
-        return if (upperBoundInclusive) w <= upperBound else w < upperBound
-    }
+    private fun inLowerBound(w: Double): Boolean = if (lowerBoundInclusive) w >= lowerBound else w > lowerBound
+
+    private fun inUpperBound(w: Double): Boolean = if (upperBoundInclusive) w <= upperBound else w < upperBound
 
     private fun inBounds(w: Double): Boolean = inLowerBound(w) && inUpperBound(w)
 
@@ -650,9 +652,7 @@ private constructor(
      *
      * @throws UnsupportedOperationException always
      */
-    override fun sort(c: Comparator<in E>?) {
-        throw UnsupportedOperationException("Not supported")
-    }
+    override fun sort(c: Comparator<in E>?): Unit = throw UnsupportedOperationException("Not supported")
 
     /**
      * Return an unmodifiable subList view of the underlying items between [from, to).
@@ -661,27 +661,21 @@ private constructor(
      *
      * @return an unmodifiable view of the specified range of items
      */
-    override fun subList(from: Int, to: Int): ObjectList<E> {
-        return items.subList(from, to).unmodifiable()
-    }
+    override fun subList(from: Int, to: Int): ObjectList<E> = items.subList(from, to).unmodifiable()
 
     /**
      * Convenience wrapper that returns whether the given element is contained in the list.
      *
      * Equivalent to `contains(key)`.
      */
-    override fun containsKey(key: Any?): Boolean {
-        return contains(key)
-    }
+    override fun containsKey(key: Any?): Boolean = contains(key)
 
     /**
      * Getter for the default return value used by `getDouble` when a key is not found.
      *
      * See also `defaultReturnValue(rv)` to set this value.
      */
-    override fun defaultReturnValue(): Double {
-        return defaultReturnValue
-    }
+    override fun defaultReturnValue(): Double = defaultReturnValue
 
     /**
      * Setter for the default return value used by `getDouble` when a key is not found.
@@ -866,7 +860,6 @@ private constructor(
             return e
         }
     }
-
 }
 
 /**

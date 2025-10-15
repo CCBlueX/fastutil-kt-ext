@@ -1,3 +1,5 @@
+@file:JvmName("Ranges")
+
 package net.ccbluex.fastutil
 
 import it.unimi.dsi.fastutil.doubles.AbstractDoubleList

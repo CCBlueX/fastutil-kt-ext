@@ -1,3 +1,4 @@
+import com.diffplug.spotless.LineEnding
 import org.jetbrains.dokka.gradle.DokkaTask
 
 plugins {
@@ -5,6 +6,7 @@ plugins {
     `maven-publish` apply true
     alias(libs.plugins.kotlin)
     alias(libs.plugins.dokka)
+    alias(libs.plugins.spotless)
 }
 
 val projectName = project.name
@@ -26,6 +28,24 @@ allprojects {
 tasks.withType<DokkaTask>().configureEach {
     dokkaSourceSets.configureEach {
         jdkVersion.set(8)
+    }
+}
+
+spotless {
+    kotlin {
+        target("**/*.kt")
+        targetExclude("**/build/**/*.kt")
+
+        ktlint().editorConfigOverride(
+            mapOf(
+                "ktlint_standard_no-wildcard-imports" to "enabled",
+                "ktlint_standard_filename" to "disabled",
+            )
+        )
+        lineEndings = LineEnding.UNIX
+        trimTrailingWhitespace()
+        endWithNewline()
+        leadingTabsToSpaces(4)
     }
 }
 

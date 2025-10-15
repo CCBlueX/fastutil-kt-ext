@@ -1,8 +1,12 @@
 package net.ccbluex.fastutil
 
 import net.ccbluex.fastutil.Pool.Companion.use
-import kotlin.test.*
 import java.util.concurrent.atomic.AtomicInteger
+import kotlin.test.Test
+import kotlin.test.assertEquals
+import kotlin.test.assertFailsWith
+import kotlin.test.assertFalse
+import kotlin.test.assertTrue
 
 class PoolTest {
 
@@ -62,7 +66,7 @@ class PoolTest {
         val builders = listOf(
             pool.borrow(),
             pool.borrow(),
-            pool.borrow()
+            pool.borrow(),
         )
         assertEquals(3, createCounter.get())
 
@@ -152,7 +156,6 @@ class PoolTest {
         // Since we're recycling, only a few objects should be created
         assertTrue(createCounter.get() <= 10) // Should need at most 10 objects
     }
-
 
     // Test batch borrowing of objects
     @Test

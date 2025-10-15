@@ -2,15 +2,16 @@ package net.ccbluex.fastutil
 
 import it.unimi.dsi.fastutil.objects.Object2DoubleFunction
 import it.unimi.dsi.fastutil.objects.Object2DoubleLinkedOpenHashMap
-import org.junit.jupiter.api.Assertions.*
-import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.assertThrows
 import java.util.function.UnaryOperator
+import kotlin.test.Test
+import kotlin.test.assertEquals
+import kotlin.test.assertFalse
+import kotlin.test.assertTrue
 
 class WeightedSortedListBlackBoxTest {
 
-    private fun makeWeighter(map: Map<String, Double>): Object2DoubleFunction<String> =
-        Object2DoubleLinkedOpenHashMap(map)
+    private fun makeWeighter(map: Map<String, Double>): Object2DoubleFunction<String> = Object2DoubleLinkedOpenHashMap(map)
 
     @Test
     fun `add should insert in sorted position when weight in bounds`() {
@@ -179,7 +180,19 @@ class WeightedSortedListBlackBoxTest {
         // operator that results in non-decreasing violation
         val listBad = WeightedSortedList<String>(0, 1.0, true, 2.0, true, w)
         listBad.addAll(listOf("a", "b", "c"))
-        assertThrows<IllegalStateException> { listBad.replaceAll(UnaryOperator { s -> if (s == "a") "b" else if (s == "b") "a" else s }) }
+        assertThrows<IllegalStateException> {
+            listBad.replaceAll(
+                UnaryOperator { s ->
+                    if (s == "a") {
+                        "b"
+                    } else if (s == "b") {
+                        "a"
+                    } else {
+                        s
+                    }
+                },
+            )
+        }
     }
 
     @Test
@@ -242,5 +255,4 @@ class WeightedSortedListBlackBoxTest {
         // sort is unsupported
         assertThrows<UnsupportedOperationException> { (l1 as java.util.List<*>).sort(null) }
     }
-
 }

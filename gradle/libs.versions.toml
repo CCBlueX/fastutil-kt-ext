@@ -9,3 +9,4 @@ fastutil = { module = "it.unimi.dsi:fastutil", version.ref = "fastutil" }
 [plugins]
 kotlin = { id = "org.jetbrains.kotlin.jvm", version.ref = "kotlin" }
 dokka = { id = "org.jetbrains.dokka", version.ref = "dokka" }
+spotless = { id = "com.diffplug.spotless", version = "7.2.1" }

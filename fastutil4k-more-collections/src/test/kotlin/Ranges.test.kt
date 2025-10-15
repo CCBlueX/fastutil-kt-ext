@@ -1,8 +1,11 @@
 package net.ccbluex.fastutil
 
-import kotlin.test.*
+import kotlin.test.Test
+import kotlin.test.assertEquals
+import kotlin.test.assertFailsWith
+import kotlin.test.assertTrue
 
-class SteppedRangeTest {
+class RangesTest {
 
     @Test
     fun testDoubleStepBasic() {

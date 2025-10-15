@@ -10,7 +10,6 @@ import java.util.function.Supplier
  * @param E Type of objects to be pooled
  */
 sealed interface Pool<E : Any> {
-
     /**
      * Borrow an object from the pool. If pool is empty, a new object is created.
      * @return The borrowed object
@@ -25,7 +24,10 @@ sealed interface Pool<E : Any> {
      * @param count The count of objects to borrow
      * @throws IllegalArgumentException if count is negative
      */
-    fun borrowInto(destination: MutableCollection<E>, count: Int)
+    fun borrowInto(
+        destination: MutableCollection<E>,
+        count: Int,
+    )
 
     /**
      * Recycle an object back to the pool for future reuse.
@@ -70,9 +72,7 @@ sealed interface Pool<E : Any> {
          */
         @JvmStatic
         @JvmName("create")
-        operator fun <E : Any> invoke(
-            initializer: Supplier<E>,
-        ) : Pool<E> = invoke(initializer) {}
+        operator fun <E : Any> invoke(initializer: Supplier<E>): Pool<E> = invoke(initializer) {}
 
         /**
          * Creates a new object pool.
@@ -86,7 +86,7 @@ sealed interface Pool<E : Any> {
         operator fun <E : Any> invoke(
             initializer: Supplier<E>,
             finalizer: Consumer<E>,
-        ) : Pool<E> = ListBasedPool(initializer, finalizer)
+        ): Pool<E> = ListBasedPool(initializer, finalizer)
 
         /**
          * Scoped use of a pooled object. Automatically recycles the object after use.
@@ -112,14 +112,22 @@ sealed interface Pool<E : Any> {
     ) : Pool<E> {
         @Synchronized
         override fun borrow() = delegate.borrow()
+
         @Synchronized
-        override fun borrowInto(destination: MutableCollection<E>, count: Int) = delegate.borrowInto(destination, count)
+        override fun borrowInto(
+            destination: MutableCollection<E>,
+            count: Int,
+        ) = delegate.borrowInto(destination, count)
+
         @Synchronized
         override fun recycle(value: E) = delegate.recycle(value)
+
         @Synchronized
         override fun recycleAll(values: Iterable<E>) = delegate.recycleAll(values)
+
         @Synchronized
         override fun clear() = delegate.clear()
+
         @Synchronized
         override fun clearInto(destination: MutableCollection<E>) = delegate.clearInto(destination)
 
@@ -140,8 +148,11 @@ sealed interface Pool<E : Any> {
 
         override fun borrow(): E = if (stack.isEmpty) initializer.get() else stack.removeAt(stack.size - 1)
 
-        override fun borrowInto(destination: MutableCollection<E>, count: Int) {
-            if (count < 0) throw IllegalArgumentException("count (${count}) < 0")
+        override fun borrowInto(
+            destination: MutableCollection<E>,
+            count: Int,
+        ) {
+            if (count < 0) throw IllegalArgumentException("count ($count) < 0")
             if (count == 0) return
 
             val size = stack.size
@@ -193,5 +204,4 @@ sealed interface Pool<E : Any> {
             return n
         }
     }
-
 }

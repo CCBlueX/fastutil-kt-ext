@@ -8,7 +8,6 @@ import org.gradle.api.tasks.OutputFile
 import org.gradle.api.tasks.TaskAction
 
 abstract class GenerateSrcTask : DefaultTask() {
-
     @get:OutputFile
     abstract val file: RegularFileProperty
 
@@ -27,7 +26,7 @@ abstract class GenerateSrcTask : DefaultTask() {
     init {
         file.convention(
             this.project.fastutilGeneratorOutput
-                .map { it.file(this.name + ".kt") }
+                .map { it.file(this.name + ".kt") },
         )
     }
 
