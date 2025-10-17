@@ -98,9 +98,9 @@ private constructor(
      */
     constructor(
         defaultCapacity: Int = 0,
-        lowerBound: Double = Double.MIN_VALUE,
+        lowerBound: Double = Double.NEGATIVE_INFINITY,
         lowerBoundInclusive: Boolean = true,
-        upperBound: Double = Double.MAX_VALUE,
+        upperBound: Double = Double.POSITIVE_INFINITY,
         upperBoundInclusive: Boolean = true,
         weighter: ToDoubleFunction<in E>,
     ) : this(
