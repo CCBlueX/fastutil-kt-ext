@@ -22,3 +22,9 @@ internal inline fun forEachMapTypes(block: (left: FastutilType, right: FastutilT
 }
 
 val Project.fastutilGeneratorOutput get() = layout.buildDirectory.dir("generated/fastutil-kt")
+
+fun interface LineAppendable {
+    fun appendLine(line: String)
+
+    fun appendLine() = appendLine("")
+}
