@@ -261,50 +261,10 @@ val mutableSetFactoryTask = tasks.register<GenerateSrcTask>("mutable-set-factory
             "RBTree" to "RBTreeSet",
             "AVLTree" to "AVLTreeSet",
         )
-        forEachTypes { type ->
+        forEachPrimitiveTypes { type ->
             for ((prefix, fullType) in prefixToFullType) {
                 val setType = "${prefix}Set"
-                if (type == FastutilType.OBJECT) {
-                    when (prefix) {
-                        "Array" -> {
-                            appendLine("inline fun <T> ${type.lowercaseName}${setType}Of(): ${type.typeName}${fullType}<T> = ${type.typeName}${fullType}()")
-                            appendLine("inline fun <T> ${type.lowercaseName}${setType}Of(vararg elements: T): ${type.typeName}${fullType}<T> = ${type.typeName}${fullType}(elements)")
-                        }
-                        "RBTree", "AVLTree" -> {
-                            appendLine("inline fun <T : Comparable<T>> ${type.lowercaseName}${setType}Of(): ${type.typeName}${fullType}<T> = ${type.typeName}${fullType}()")
-                            appendLine("inline fun <T : Comparable<T>> ${type.lowercaseName}${setType}Of(vararg elements: T): ${type.typeName}${fullType}<T> = ${type.typeName}${fullType}(elements)")
-
-                            appendLine("inline fun <T> ${type.lowercaseName}${setType}Of(comparator: Comparator<in T>): ${type.typeName}${fullType}<T> = ${type.typeName}${fullType}(comparator)")
-                            appendLine("inline fun <T> ${type.lowercaseName}${setType}Of(comparator: Comparator<in T>, vararg elements: T): ${type.typeName}${fullType}<T> = ${type.typeName}${fullType}(elements, comparator)")
-                        }
-                        "Hash" -> {
-                            appendLine("inline fun <T> ${type.lowercaseName}${setType}Of(): ${type.typeName}${fullType}<T> = ${type.typeName}${fullType}()")
-                            appendLine("inline fun <T> ${type.lowercaseName}${setType}Of(element: T): ${type.typeName}${fullType}<T> = ${type.typeName}${fullType}.of(element)")
-                            appendLine("inline fun <T> ${type.lowercaseName}${setType}Of(vararg elements: T): ${type.typeName}${fullType}<T> = ${type.typeName}${fullType}(elements)")
-
-                            appendLine("inline fun <T> ${type.lowercaseName}${setType}Of(strategy: Hash.Strategy<T>, vararg elements: T): ${type.typeName}OpenCustomHashSet<T> = ${type.typeName}OpenCustomHashSet(elements, strategy)")
-                        }
-
-                        else -> {
-                            appendLine("inline fun <T> ${type.lowercaseName}${setType}Of(element: T): ${type.typeName}${fullType}<T> = ${type.typeName}${fullType}.of(element)")
-                            appendLine("inline fun <T> ${type.lowercaseName}${setType}Of(vararg elements: T): ${type.typeName}${fullType}<T> = ${type.typeName}${fullType}(elements)")
-                        }
-                    }
-                } else if (type == FastutilType.REFERENCE) {
-                    when (prefix) {
-                        "Array" -> appendLine("inline fun <T> ${type.lowercaseName}${setType}Of(vararg elements: T): ${type.typeName}${fullType}<T> = ${type.typeName}${fullType}(elements)")
-                        "RBTree", "AVLTree" -> {}
-                        "Hash" -> {
-                            appendLine("inline fun <T> ${type.lowercaseName}${setType}Of(element: T): ${type.typeName}${fullType}<T> = ${type.typeName}${fullType}.of(element)")
-                            appendLine("inline fun <T> ${type.lowercaseName}${setType}Of(vararg elements: T): ${type.typeName}${fullType}<T> = ${type.typeName}${fullType}(elements)")
-                        }
-
-                        else -> {
-                            appendLine("inline fun <T> ${type.lowercaseName}${setType}Of(element: T): ${type.typeName}${fullType}<T> = ${type.typeName}${fullType}.of(element)")
-                            appendLine("inline fun <T> ${type.lowercaseName}${setType}Of(vararg elements: T): ${type.typeName}${fullType}<T> = ${type.typeName}${fullType}(elements)")
-                        }
-                    }
-                } else if (type != FastutilType.BOOLEAN || (prefix == "Array" || prefix == "Hash")) {
+                if (type != FastutilType.BOOLEAN || (prefix == "Array" || prefix == "Hash")) {
                     appendLine("inline fun ${type.lowercaseName}${setType}Of(): ${type.typeName}${fullType} = ${type.typeName}${fullType}()")
                     when (prefix) {
                         "Array", "RBTree", "AVLTree" -> appendLine("inline fun ${type.lowercaseName}${setType}Of(vararg elements: ${type.typeName}): ${type.typeName}${fullType} = ${type.typeName}${fullType}(elements)")
@@ -320,6 +280,54 @@ val mutableSetFactoryTask = tasks.register<GenerateSrcTask>("mutable-set-factory
                             appendLine("inline fun ${type.lowercaseName}${setType}Of(vararg elements: ${type.typeName}): ${type.typeName}${fullType} = ${type.typeName}${fullType}(elements)")
                         }
                     }
+                }
+            }
+        }
+
+        var type = FastutilType.OBJECT
+        for ((prefix, fullType) in prefixToFullType) {
+            val setType = "${prefix}Set"
+            when (prefix) {
+                "Array" -> {
+                    appendLine("inline fun <T> ${type.lowercaseName}${setType}Of(): ${type.typeName}${fullType}<T> = ${type.typeName}${fullType}()")
+                    appendLine("inline fun <T> ${type.lowercaseName}${setType}Of(vararg elements: T): ${type.typeName}${fullType}<T> = ${type.typeName}${fullType}(elements)")
+                }
+                "RBTree", "AVLTree" -> {
+                    appendLine("inline fun <T : Comparable<T>> ${type.lowercaseName}${setType}Of(): ${type.typeName}${fullType}<T> = ${type.typeName}${fullType}()")
+                    appendLine("inline fun <T : Comparable<T>> ${type.lowercaseName}${setType}Of(vararg elements: T): ${type.typeName}${fullType}<T> = ${type.typeName}${fullType}(elements)")
+
+                    appendLine("inline fun <T> ${type.lowercaseName}${setType}Of(comparator: Comparator<in T>): ${type.typeName}${fullType}<T> = ${type.typeName}${fullType}(comparator)")
+                    appendLine("inline fun <T> ${type.lowercaseName}${setType}Of(comparator: Comparator<in T>, vararg elements: T): ${type.typeName}${fullType}<T> = ${type.typeName}${fullType}(elements, comparator)")
+                }
+                "Hash" -> {
+                    appendLine("inline fun <T> ${type.lowercaseName}${setType}Of(): ${type.typeName}${fullType}<T> = ${type.typeName}${fullType}()")
+                    appendLine("inline fun <T> ${type.lowercaseName}${setType}Of(element: T): ${type.typeName}${fullType}<T> = ${type.typeName}${fullType}.of(element)")
+                    appendLine("inline fun <T> ${type.lowercaseName}${setType}Of(vararg elements: T): ${type.typeName}${fullType}<T> = ${type.typeName}${fullType}(elements)")
+
+                    appendLine("inline fun <T> ${type.lowercaseName}${setType}Of(strategy: Hash.Strategy<T>, vararg elements: T): ${type.typeName}OpenCustomHashSet<T> = ${type.typeName}OpenCustomHashSet(elements, strategy)")
+                }
+
+                else -> {
+                    appendLine("inline fun <T> ${type.lowercaseName}${setType}Of(element: T): ${type.typeName}${fullType}<T> = ${type.typeName}${fullType}.of(element)")
+                    appendLine("inline fun <T> ${type.lowercaseName}${setType}Of(vararg elements: T): ${type.typeName}${fullType}<T> = ${type.typeName}${fullType}(elements)")
+                }
+            }
+        }
+
+        type = FastutilType.REFERENCE
+        for ((prefix, fullType) in prefixToFullType) {
+            val setType = "${prefix}Set"
+            when (prefix) {
+                "Array" -> appendLine("inline fun <T> ${type.lowercaseName}${setType}Of(vararg elements: T): ${type.typeName}${fullType}<T> = ${type.typeName}${fullType}(elements)")
+                "RBTree", "AVLTree" -> {}
+                "Hash" -> {
+                    appendLine("inline fun <T> ${type.lowercaseName}${setType}Of(element: T): ${type.typeName}${fullType}<T> = ${type.typeName}${fullType}.of(element)")
+                    appendLine("inline fun <T> ${type.lowercaseName}${setType}Of(vararg elements: T): ${type.typeName}${fullType}<T> = ${type.typeName}${fullType}(elements)")
+                }
+
+                else -> {
+                    appendLine("inline fun <T> ${type.lowercaseName}${setType}Of(element: T): ${type.typeName}${fullType}<T> = ${type.typeName}${fullType}.of(element)")
+                    appendLine("inline fun <T> ${type.lowercaseName}${setType}Of(vararg elements: T): ${type.typeName}${fullType}<T> = ${type.typeName}${fullType}(elements)")
                 }
             }
         }
