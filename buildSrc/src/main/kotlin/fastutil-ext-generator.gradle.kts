@@ -7,7 +7,7 @@ val generateAllTask = tasks.register("generate-all") {
     dependsOn(
         syncUnmodifiableTask,
         pairComponentNTask,
-//        pairFactoryTask,
+        pairFactoryTask,
         immutableListSetFactoryTask,
         mutableListFactoryTask,
         mutableSetFactoryTask,
@@ -143,16 +143,31 @@ val pairComponentNTask = tasks.register<GenerateSrcTask>("pair-componentN") {
     }
 }
 
-// TODO
 val pairFactoryTask = tasks.register<GenerateSrcTask>("pair-factory") {
     group = TASK_GROUP
 
     packageName.set(PACKAGE)
-    imports.add("it.unimi.dsi.fastutil.Pair")
+//    imports.add("it.unimi.dsi.fastutil.Pair")
     imports.addAll(IMPORT_ALL)
 
     content {
-        appendLine("inline fun <K, V> pair(left: K, right: V): Pair<K, V> = ObjectObjectImmutablePair(left, right)")
+        // Left has no OBJECT/REFERENCE to prevent autocompletion polluted
+        forEachPrimitiveTypes { typeLeft ->
+            forEachTypes { typeRight ->
+                if (typeRight.isGeneric) {
+                    if (typeRight == FastutilType.OBJECT) {
+                        appendLine("inline infix fun <V> ${typeLeft}.pair(right: V) = ${typeLeft}${typeRight}ImmutablePair(this, right)")
+                        appendLine("inline infix fun <V> ${typeLeft}.mutPair(right: V) = ${typeLeft}${typeRight}MutablePair(this, right)")
+                    } else {
+                        appendLine("inline infix fun <V> ${typeLeft}.refPair(right: V) = ${typeLeft}${typeRight}ImmutablePair(this, right)")
+                        appendLine("inline infix fun <V> ${typeLeft}.mutRefPair(right: V) = ${typeLeft}${typeRight}MutablePair(this, right)")
+                    }
+                } else {
+                    appendLine("inline infix fun ${typeLeft}.pair(right: ${typeRight}) = ${typeLeft}${typeRight}ImmutablePair(this, right)")
+                    appendLine("inline infix fun ${typeLeft}.mutPair(right: ${typeRight}) = ${typeLeft}${typeRight}MutablePair(this, right)")
+                }
+            }
+        }
     }
 }
 
@@ -169,40 +184,40 @@ val immutableListSetFactoryTask = tasks.register<GenerateSrcTask>("immutable-lis
 
     content {
         forEachTypes { type ->
-            val emptyList = "${type.typeName}Lists.emptyList()"
-            val emptySet = "${type.typeName}Sets.emptySet()"
-            fun singletonList(placeholder: String = "element") = "${type.typeName}Lists.singleton($placeholder)"
-            fun singletonSet(placeholder: String = "element") = "${type.typeName}Sets.singleton($placeholder)"
+            val emptyList = "${type}Lists.emptyList()"
+            val emptySet = "${type}Sets.emptySet()"
+            fun singletonList(placeholder: String = "element") = "${type}Lists.singleton($placeholder)"
+            fun singletonSet(placeholder: String = "element") = "${type}Sets.singleton($placeholder)"
             if (type.isGeneric) {
-                appendLine("inline fun <T> ${type.typeName}List<T>?.orEmpty(): ${type.typeName}List<T> = this ?: $emptyList")
-                appendLine("inline fun <T> ${type.typeName}Set<T>?.orEmpty(): ${type.typeName}Set<T> = this ?: $emptySet")
+                appendLine("inline fun <T> ${type}List<T>?.orEmpty(): ${type}List<T> = this ?: $emptyList")
+                appendLine("inline fun <T> ${type}Set<T>?.orEmpty(): ${type}Set<T> = this ?: $emptySet")
 
-                appendLine("inline fun <T> ${type.lowercaseName}ListOf(): ${type.typeName}List<T> = $emptyList")
-//                appendLine("inline fun <T> ${type.lowercaseName}SetOf(): ${type.typeName}Set<T> = $emptySet")
+                appendLine("inline fun <T> ${type.lowercaseName}ListOf(): ${type}List<T> = $emptyList")
+//                appendLine("inline fun <T> ${type.lowercaseName}SetOf(): ${type}Set<T> = $emptySet")
 
-                appendLine("inline fun <T> ${type.lowercaseName}ListOf(element: T): ${type.typeName}List<T> = ${singletonList()}")
-//                appendLine("inline fun <T> ${type.lowercaseName}SetOf(element: T): ${type.typeName}Set<T> = ${singletonSet()}")
+                appendLine("inline fun <T> ${type.lowercaseName}ListOf(element: T): ${type}List<T> = ${singletonList()}")
+//                appendLine("inline fun <T> ${type.lowercaseName}SetOf(element: T): ${type}Set<T> = ${singletonSet()}")
 
-                appendLine("inline fun <T> ${type.lowercaseName}ListOf(vararg elements: T): ${type.typeName}List<T> =")
-                appendLine("when(elements.size) { 0 -> $emptyList 1 -> ${singletonList("elements[0]")} else -> ${type.typeName}ImmutableList(elements) }")
+                appendLine("inline fun <T> ${type.lowercaseName}ListOf(vararg elements: T): ${type}List<T> =")
+                appendLine("when(elements.size) { 0 -> $emptyList 1 -> ${singletonList("elements[0]")} else -> ${type}ImmutableList(elements) }")
 
-                appendLine("inline fun <T> Array<out T>.as${type.typeName}List(): ${type.typeName}List<T> = ${type.typeName}ImmutableList(this)")
-                appendLine("inline fun <T> Array<out T>.as${type.typeName}List(offset: Int = 0, length: Int = this.size): ${type.typeName}List<T> = ${type.typeName}ImmutableList(this, offset, length)")
+                appendLine("inline fun <T> Array<out T>.as${type}List(): ${type}List<T> = ${type}ImmutableList(this)")
+                appendLine("inline fun <T> Array<out T>.as${type}List(offset: Int = 0, length: Int = this.size): ${type}List<T> = ${type}ImmutableList(this, offset, length)")
             } else {
-                appendLine("inline fun ${type.typeName}List?.orEmpty(): ${type.typeName}List = this ?: $emptyList")
-                appendLine("inline fun ${type.typeName}Set?.orEmpty(): ${type.typeName}Set = this ?: $emptySet")
+                appendLine("inline fun ${type}List?.orEmpty(): ${type}List = this ?: $emptyList")
+                appendLine("inline fun ${type}Set?.orEmpty(): ${type}Set = this ?: $emptySet")
 
-                appendLine("inline fun ${type.lowercaseName}ListOf(): ${type.typeName}List = $emptyList")
-//                appendLine("inline fun ${type.lowercaseName}SetOf(): ${type.typeName}Set = $emptySet")
+                appendLine("inline fun ${type.lowercaseName}ListOf(): ${type}List = $emptyList")
+//                appendLine("inline fun ${type.lowercaseName}SetOf(): ${type}Set = $emptySet")
 
-                appendLine("inline fun ${type.lowercaseName}ListOf(element: ${type.typeName}): ${type.typeName}List = ${singletonList()}")
-//                appendLine("inline fun ${type.lowercaseName}SetOf(element: ${type.typeName}): ${type.typeName}Set = ${singletonSet()}")
+                appendLine("inline fun ${type.lowercaseName}ListOf(element: ${type}): ${type}List = ${singletonList()}")
+//                appendLine("inline fun ${type.lowercaseName}SetOf(element: ${type}): ${type}Set = ${singletonSet()}")
 
-                appendLine("inline fun ${type.lowercaseName}ListOf(vararg elements: ${type.typeName}): ${type.typeName}List =")
-                appendLine("when(elements.size) { 0 -> $emptyList 1 -> ${singletonList("elements[0]")} else -> ${type.typeName}ImmutableList(elements) }")
+                appendLine("inline fun ${type.lowercaseName}ListOf(vararg elements: ${type}): ${type}List =")
+                appendLine("when(elements.size) { 0 -> $emptyList 1 -> ${singletonList("elements[0]")} else -> ${type}ImmutableList(elements) }")
 
-                appendLine("inline fun ${type.typeName}Array.as${type.typeName}List(): ${type.typeName}List = ${type.typeName}ImmutableList(this)")
-                appendLine("inline fun ${type.typeName}Array.as${type.typeName}List(offset: Int = 0, length: Int = this.size): ${type.typeName}List = ${type.typeName}ImmutableList(this, offset, length)")
+                appendLine("inline fun ${type}Array.as${type}List(): ${type}List = ${type}ImmutableList(this)")
+                appendLine("inline fun ${type}Array.as${type}List(offset: Int = 0, length: Int = this.size): ${type}List = ${type}ImmutableList(this, offset, length)")
             }
         }
     }
@@ -222,16 +237,16 @@ val mutableListFactoryTask = tasks.register<GenerateSrcTask>("mutable-list-facto
     content {
         forEachTypes { type ->
             if (type.isGeneric) {
-                appendLine("inline fun <T> ${type.lowercaseName}MutableListOf(): ${type.typeName}List<T> = ${type.typeName}ArrayList()")
-                appendLine("inline fun <T> ${type.lowercaseName}MutableListOf(vararg elements: T): ${type.typeName}List<T> = ${type.typeName}ArrayList(elements)")
+                appendLine("inline fun <T> ${type.lowercaseName}MutableListOf(): ${type}List<T> = ${type}ArrayList()")
+                appendLine("inline fun <T> ${type.lowercaseName}MutableListOf(vararg elements: T): ${type}List<T> = ${type}ArrayList(elements)")
 
-                appendLine("inline fun <T> Array<out T>.to${type.typeName}MutableList(offset: Int = 0, length: Int = this.size): ${type.typeName}List<T> = ${type.typeName}ArrayList(this, offset, length)")
+                appendLine("inline fun <T> Array<out T>.to${type}MutableList(offset: Int = 0, length: Int = this.size): ${type}List<T> = ${type}ArrayList(this, offset, length)")
             } else {
-                appendLine("inline fun ${type.lowercaseName}MutableListOf(): ${type.typeName}List = ${type.typeName}ArrayList()")
-                appendLine("inline fun ${type.lowercaseName}MutableListOf(element: ${type.typeName}): ${type.typeName}List = ${type.typeName}ArrayList.wrap(${type.lowercaseName}ArrayOf(element))")
-                appendLine("inline fun ${type.lowercaseName}MutableListOf(vararg elements: ${type.typeName}): ${type.typeName}List = ${type.typeName}ArrayList(elements)")
+                appendLine("inline fun ${type.lowercaseName}MutableListOf(): ${type}List = ${type}ArrayList()")
+                appendLine("inline fun ${type.lowercaseName}MutableListOf(element: ${type}): ${type}List = ${type}ArrayList.wrap(${type.lowercaseName}ArrayOf(element))")
+                appendLine("inline fun ${type.lowercaseName}MutableListOf(vararg elements: ${type}): ${type}List = ${type}ArrayList(elements)")
 
-                appendLine("inline fun ${type.typeName}Array.to${type.typeName}MutableList(offset: Int = 0, length: Int = this.size): ${type.typeName}List = ${type.typeName}ArrayList(this, offset, length)")
+                appendLine("inline fun ${type}Array.to${type}MutableList(offset: Int = 0, length: Int = this.size): ${type}List = ${type}ArrayList(this, offset, length)")
             }
         }
     }
@@ -265,19 +280,19 @@ val mutableSetFactoryTask = tasks.register<GenerateSrcTask>("mutable-set-factory
             for ((prefix, fullType) in prefixToFullType) {
                 val setType = "${prefix}Set"
                 if (type != FastutilType.BOOLEAN || (prefix == "Array" || prefix == "Hash")) {
-                    appendLine("inline fun ${type.lowercaseName}${setType}Of(): ${type.typeName}${fullType} = ${type.typeName}${fullType}()")
+                    appendLine("inline fun ${type.lowercaseName}${setType}Of(): ${type}${fullType} = ${type}${fullType}()")
                     when (prefix) {
-                        "Array", "RBTree", "AVLTree" -> appendLine("inline fun ${type.lowercaseName}${setType}Of(vararg elements: ${type.typeName}): ${type.typeName}${fullType} = ${type.typeName}${fullType}(elements)")
+                        "Array", "RBTree", "AVLTree" -> appendLine("inline fun ${type.lowercaseName}${setType}Of(vararg elements: ${type}): ${type}${fullType} = ${type}${fullType}(elements)")
                         "Hash" -> {
-                            appendLine("inline fun ${type.lowercaseName}${setType}Of(element: ${type.typeName}): ${type.typeName}${fullType} = ${type.typeName}${fullType}.of(element)")
-                            appendLine("inline fun ${type.lowercaseName}${setType}Of(vararg elements: ${type.typeName}): ${type.typeName}${fullType} = ${type.typeName}${fullType}(elements)")
+                            appendLine("inline fun ${type.lowercaseName}${setType}Of(element: ${type}): ${type}${fullType} = ${type}${fullType}.of(element)")
+                            appendLine("inline fun ${type.lowercaseName}${setType}Of(vararg elements: ${type}): ${type}${fullType} = ${type}${fullType}(elements)")
 
                             if (type != FastutilType.BOOLEAN)
-                                appendLine("inline fun ${type.lowercaseName}${setType}Of(strategy: ${type.typeName}Hash.Strategy, vararg elements: ${type.typeName}): ${type.typeName}OpenCustomHashSet = ${type.typeName}OpenCustomHashSet(elements, strategy)")
+                                appendLine("inline fun ${type.lowercaseName}${setType}Of(strategy: ${type}Hash.Strategy, vararg elements: ${type}): ${type}OpenCustomHashSet = ${type}OpenCustomHashSet(elements, strategy)")
                         }
                         else -> {
-                            appendLine("inline fun ${type.lowercaseName}${setType}Of(element: ${type.typeName}): ${type.typeName}${fullType} = ${type.typeName}${fullType}.of(element)")
-                            appendLine("inline fun ${type.lowercaseName}${setType}Of(vararg elements: ${type.typeName}): ${type.typeName}${fullType} = ${type.typeName}${fullType}(elements)")
+                            appendLine("inline fun ${type.lowercaseName}${setType}Of(element: ${type}): ${type}${fullType} = ${type}${fullType}.of(element)")
+                            appendLine("inline fun ${type.lowercaseName}${setType}Of(vararg elements: ${type}): ${type}${fullType} = ${type}${fullType}(elements)")
                         }
                     }
                 }
@@ -289,27 +304,27 @@ val mutableSetFactoryTask = tasks.register<GenerateSrcTask>("mutable-set-factory
             val setType = "${prefix}Set"
             when (prefix) {
                 "Array" -> {
-                    appendLine("inline fun <T> ${type.lowercaseName}${setType}Of(): ${type.typeName}${fullType}<T> = ${type.typeName}${fullType}()")
-                    appendLine("inline fun <T> ${type.lowercaseName}${setType}Of(vararg elements: T): ${type.typeName}${fullType}<T> = ${type.typeName}${fullType}(elements)")
+                    appendLine("inline fun <T> ${type.lowercaseName}${setType}Of(): ${type}${fullType}<T> = ${type}${fullType}()")
+                    appendLine("inline fun <T> ${type.lowercaseName}${setType}Of(vararg elements: T): ${type}${fullType}<T> = ${type}${fullType}(elements)")
                 }
                 "RBTree", "AVLTree" -> {
-                    appendLine("inline fun <T : Comparable<T>> ${type.lowercaseName}${setType}Of(): ${type.typeName}${fullType}<T> = ${type.typeName}${fullType}()")
-                    appendLine("inline fun <T : Comparable<T>> ${type.lowercaseName}${setType}Of(vararg elements: T): ${type.typeName}${fullType}<T> = ${type.typeName}${fullType}(elements)")
+                    appendLine("inline fun <T : Comparable<T>> ${type.lowercaseName}${setType}Of(): ${type}${fullType}<T> = ${type}${fullType}()")
+                    appendLine("inline fun <T : Comparable<T>> ${type.lowercaseName}${setType}Of(vararg elements: T): ${type}${fullType}<T> = ${type}${fullType}(elements)")
 
-                    appendLine("inline fun <T> ${type.lowercaseName}${setType}Of(comparator: Comparator<in T>): ${type.typeName}${fullType}<T> = ${type.typeName}${fullType}(comparator)")
-                    appendLine("inline fun <T> ${type.lowercaseName}${setType}Of(comparator: Comparator<in T>, vararg elements: T): ${type.typeName}${fullType}<T> = ${type.typeName}${fullType}(elements, comparator)")
+                    appendLine("inline fun <T> ${type.lowercaseName}${setType}Of(comparator: Comparator<in T>): ${type}${fullType}<T> = ${type}${fullType}(comparator)")
+                    appendLine("inline fun <T> ${type.lowercaseName}${setType}Of(comparator: Comparator<in T>, vararg elements: T): ${type}${fullType}<T> = ${type}${fullType}(elements, comparator)")
                 }
                 "Hash" -> {
-                    appendLine("inline fun <T> ${type.lowercaseName}${setType}Of(): ${type.typeName}${fullType}<T> = ${type.typeName}${fullType}()")
-                    appendLine("inline fun <T> ${type.lowercaseName}${setType}Of(element: T): ${type.typeName}${fullType}<T> = ${type.typeName}${fullType}.of(element)")
-                    appendLine("inline fun <T> ${type.lowercaseName}${setType}Of(vararg elements: T): ${type.typeName}${fullType}<T> = ${type.typeName}${fullType}(elements)")
+                    appendLine("inline fun <T> ${type.lowercaseName}${setType}Of(): ${type}${fullType}<T> = ${type}${fullType}()")
+                    appendLine("inline fun <T> ${type.lowercaseName}${setType}Of(element: T): ${type}${fullType}<T> = ${type}${fullType}.of(element)")
+                    appendLine("inline fun <T> ${type.lowercaseName}${setType}Of(vararg elements: T): ${type}${fullType}<T> = ${type}${fullType}(elements)")
 
-                    appendLine("inline fun <T> ${type.lowercaseName}${setType}Of(strategy: Hash.Strategy<T>, vararg elements: T): ${type.typeName}OpenCustomHashSet<T> = ${type.typeName}OpenCustomHashSet(elements, strategy)")
+                    appendLine("inline fun <T> ${type.lowercaseName}${setType}Of(strategy: Hash.Strategy<T>, vararg elements: T): ${type}OpenCustomHashSet<T> = ${type}OpenCustomHashSet(elements, strategy)")
                 }
 
                 else -> {
-                    appendLine("inline fun <T> ${type.lowercaseName}${setType}Of(element: T): ${type.typeName}${fullType}<T> = ${type.typeName}${fullType}.of(element)")
-                    appendLine("inline fun <T> ${type.lowercaseName}${setType}Of(vararg elements: T): ${type.typeName}${fullType}<T> = ${type.typeName}${fullType}(elements)")
+                    appendLine("inline fun <T> ${type.lowercaseName}${setType}Of(element: T): ${type}${fullType}<T> = ${type}${fullType}.of(element)")
+                    appendLine("inline fun <T> ${type.lowercaseName}${setType}Of(vararg elements: T): ${type}${fullType}<T> = ${type}${fullType}(elements)")
                 }
             }
         }
@@ -318,16 +333,16 @@ val mutableSetFactoryTask = tasks.register<GenerateSrcTask>("mutable-set-factory
         for ((prefix, fullType) in prefixToFullType) {
             val setType = "${prefix}Set"
             when (prefix) {
-                "Array" -> appendLine("inline fun <T> ${type.lowercaseName}${setType}Of(vararg elements: T): ${type.typeName}${fullType}<T> = ${type.typeName}${fullType}(elements)")
+                "Array" -> appendLine("inline fun <T> ${type.lowercaseName}${setType}Of(vararg elements: T): ${type}${fullType}<T> = ${type}${fullType}(elements)")
                 "RBTree", "AVLTree" -> {}
                 "Hash" -> {
-                    appendLine("inline fun <T> ${type.lowercaseName}${setType}Of(element: T): ${type.typeName}${fullType}<T> = ${type.typeName}${fullType}.of(element)")
-                    appendLine("inline fun <T> ${type.lowercaseName}${setType}Of(vararg elements: T): ${type.typeName}${fullType}<T> = ${type.typeName}${fullType}(elements)")
+                    appendLine("inline fun <T> ${type.lowercaseName}${setType}Of(element: T): ${type}${fullType}<T> = ${type}${fullType}.of(element)")
+                    appendLine("inline fun <T> ${type.lowercaseName}${setType}Of(vararg elements: T): ${type}${fullType}<T> = ${type}${fullType}(elements)")
                 }
 
                 else -> {
-                    appendLine("inline fun <T> ${type.lowercaseName}${setType}Of(element: T): ${type.typeName}${fullType}<T> = ${type.typeName}${fullType}.of(element)")
-                    appendLine("inline fun <T> ${type.lowercaseName}${setType}Of(vararg elements: T): ${type.typeName}${fullType}<T> = ${type.typeName}${fullType}(elements)")
+                    appendLine("inline fun <T> ${type.lowercaseName}${setType}Of(element: T): ${type}${fullType}<T> = ${type}${fullType}.of(element)")
+                    appendLine("inline fun <T> ${type.lowercaseName}${setType}Of(vararg elements: T): ${type}${fullType}<T> = ${type}${fullType}(elements)")
                 }
             }
         }
